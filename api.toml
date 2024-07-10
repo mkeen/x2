@@ -1,0 +1,11 @@
+[constants]
+version = "2"
+base_url = "api.twitter.com"
+
+[[endpoints]]
+request = "Authentication"
+path = "oauth2/token"
+
+[[endpoints]]
+request = "RateLimit"
+path = "application/limits"
