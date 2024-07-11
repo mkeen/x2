@@ -1,20 +1,13 @@
 use crate::requests::Request;
-use crate::responses::Response;
-
-use oauth2::{
-    basic::{BasicClient, BasicErrorResponseType, BasicTokenType},
-    AuthUrl, Client, EmptyExtraTokenFields, RevocationErrorResponseType, StandardErrorResponse,
-    StandardRevocableToken, StandardTokenIntrospectionResponse, StandardTokenResponse, TokenUrl,
-};
 
 use super::error::XError;
 
-#[derive(Clone)]
+#[derive(Debug)]
 pub enum RequestCredential {
     Bearer(oauth2::AccessToken),
 }
 
-#[derive(Clone)]
+#[derive(Debug)]
 pub enum AppCredential {
     AppOnly {
         client_id: oauth2::ClientId,
@@ -22,48 +15,11 @@ pub enum AppCredential {
     },
 }
 
-impl AppCredential {
-    pub fn to_request_credential(&self) -> Result<RequestCredential, XError> {
-        self.authenticate().map(|r| match r {
-            Response::AuthToken(creds) => creds,
-        })
-    }
+impl TryInto<RequestCredential> for AppCredential {
+    type Error = XError;
 
-    fn authenticate(&self) -> Result<Response, XError> {
+    fn try_into(self) -> Result<RequestCredential, XError> {
         crate::requests::auth::Request::new(self).request()
-    }
-}
-
-pub enum Authentication<'a> {
-    GetBearerToken(&'a AppCredential),
-}
-
-impl<'a> Authentication<'a> {
-    pub fn client(
-        self,
-        auth_url: AuthUrl,
-        token_url: Option<TokenUrl>,
-    ) -> Client<
-        StandardErrorResponse<BasicErrorResponseType>,
-        StandardTokenResponse<EmptyExtraTokenFields, BasicTokenType>,
-        BasicTokenType,
-        StandardTokenIntrospectionResponse<EmptyExtraTokenFields, BasicTokenType>,
-        StandardRevocableToken,
-        StandardErrorResponse<RevocationErrorResponseType>,
-    > {
-        match self {
-            Self::GetBearerToken(app_cred) => match app_cred {
-                AppCredential::AppOnly {
-                    client_id,
-                    client_secret,
-                } => BasicClient::new(
-                    client_id.clone(),
-                    Some(client_secret.clone()),
-                    auth_url,
-                    token_url,
-                ),
-            },
-        }
     }
 }
 
@@ -81,7 +37,9 @@ mod tests {
             )),
         };
 
-        let request_credential = authentication.to_request_credential();
+        let request_credential: Result<RequestCredential, XError> = authentication.try_into();
+
+        println!("{:?}", request_credential);
 
         assert!(request_credential.is_ok())
     }

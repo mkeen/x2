@@ -1,43 +1,48 @@
-use oauth2::{reqwest::http_client, TokenResponse};
+use oauth2::{basic::BasicClient, reqwest::http_client, AuthUrl, TokenResponse, TokenUrl};
 
 use crate::{
     config::{endpoint_url, EndpointId},
     model::{
-        auth::{AppCredential, Authentication, RequestCredential},
+        auth::{AppCredential, RequestCredential},
         error::XError,
     },
-    responses::Response,
 };
 
-pub struct Request<'a> {
+pub struct Request {
     url: reqwest::Url,
-    app_credential: &'a AppCredential,
+    credential: AppCredential,
 }
 
-impl<'a> Request<'a> {
-    pub fn new(app_credential: &'a AppCredential) -> Self {
+impl Request {
+    pub fn new(credential: AppCredential) -> Self {
         Request {
-            app_credential,
+            credential,
             url: endpoint_url(EndpointId::Authentication)
                 .expect("lib error, could not find url for request type"),
         }
     }
+
+    pub fn client(self) -> BasicClient {
+        match self.credential {
+            AppCredential::AppOnly {
+                client_id,
+                client_secret,
+            } => BasicClient::new(
+                client_id,
+                Some(client_secret),
+                AuthUrl::new("https://localhost/stub".to_string()).expect("sorry"),
+                Some(TokenUrl::from_url(self.url)),
+            ),
+        }
+    }
 }
 
-impl<'a> super::Request for Request<'a> {
-    fn request(&self) -> Result<Response, XError> {
-        Authentication::GetBearerToken(&self.app_credential)
-            .client(
-                oauth2::AuthUrl::from_url(self.url.clone()),
-                Some(oauth2::TokenUrl::from_url(self.url.clone())),
-            )
+impl super::Request for Request {
+    fn request(self) -> Result<RequestCredential, XError> {
+        self.client()
             .exchange_client_credentials()
             .request(http_client)
             .map_err(|e| XError::Auth(e.to_string()))
-            .map(|token_response| {
-                Response::AuthToken(RequestCredential::Bearer(
-                    token_response.access_token().to_owned(), // todo error is because some trait needs to be imported
-                ))
-            })
+            .map(|r| RequestCredential::Bearer(r.access_token().to_owned()))
     }
 }

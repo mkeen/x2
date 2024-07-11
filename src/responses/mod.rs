@@ -1,5 +1,9 @@
+use strum::EnumDiscriminants;
+
 use crate::model::auth::RequestCredential;
 
-pub enum Response {
-    AuthToken(RequestCredential),
+#[derive(EnumDiscriminants)]
+#[strum_discriminants(name(ResponseId))]
+pub enum Response<'a> {
+    Bearer(RequestCredential<'a>),
 }

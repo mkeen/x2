@@ -1,7 +1,7 @@
 use reqwest::Url;
 use serde::Deserialize;
 use std::sync::OnceLock;
-use strum::EnumDiscriminants;
+use strum::{EnumDiscriminants, EnumIter};
 use toml;
 
 const RAW: &str = include_str!("./../api.toml");
@@ -13,11 +13,15 @@ pub struct EndpointsConfig {
 }
 
 impl EndpointsConfig {
-    pub fn find_endpoint(&self, search: EndpointId) -> Option<Endpoint> {
-        self.endpoints
-            .clone()
-            .into_iter()
-            .find(|found: &Endpoint| search == found.into())
+    pub fn find_endpoint(&self, search: EndpointId) -> Option<&Endpoint> {
+        for endpoint in &self.endpoints {
+            let endpoint_id: EndpointId = endpoint.into();
+            if search == endpoint_id {
+                return Some(endpoint);
+            }
+        }
+
+        return None;
     }
 }
 
@@ -27,12 +31,12 @@ pub struct Constants {
     base_url: String,
 }
 
-#[derive(Debug, Deserialize, PartialEq, Default, Clone)]
+#[derive(Debug, Deserialize, PartialEq, Default)]
 pub struct EndpointData {
     path: String,
 }
 
-#[derive(Debug, Deserialize, PartialEq, Clone, EnumDiscriminants)]
+#[derive(Debug, Deserialize, PartialEq, EnumDiscriminants, EnumIter)]
 #[strum_discriminants(name(EndpointId))]
 #[serde(tag = "request")]
 pub enum Endpoint {

@@ -1,7 +1,7 @@
 pub mod auth;
 
-use crate::{model::error::XError, responses::Response};
+use crate::model::{auth::RequestCredential, error::XError};
 
 pub trait Request {
-    fn request(&self) -> Result<Response, XError>;
+    fn request(self) -> Result<RequestCredential, XError>;
 }

@@ -3,7 +3,7 @@ pub use oauth2;
 mod config;
 mod model;
 pub mod requests;
-mod responses;
+//mod responses;
 
 // #[cfg(test)]
 // mod tests {
