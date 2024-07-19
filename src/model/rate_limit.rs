@@ -8,7 +8,7 @@ mod tests {
         requests::Request,
     };
 
-    use super::*;
+    
 
     #[test]
     // todo: this is a temporary test. can make integration tests tho, just need to read keys from ENV, etc
