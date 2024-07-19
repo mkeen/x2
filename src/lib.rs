@@ -1,9 +1,9 @@
 pub use oauth2;
+pub mod requests;
 
 mod config;
 mod model;
-pub mod requests;
-//mod responses;
+mod responses;
 
 // #[cfg(test)]
 // mod tests {

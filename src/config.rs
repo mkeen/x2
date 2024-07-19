@@ -1,7 +1,7 @@
 use reqwest::Url;
 use serde::Deserialize;
 use std::sync::OnceLock;
-use strum::{EnumDiscriminants, EnumIter};
+use strum::EnumProperty;
 use toml;
 
 const RAW: &str = include_str!("./../api.toml");
@@ -12,18 +12,7 @@ pub struct EndpointsConfig {
     endpoints: Vec<Endpoint>,
 }
 
-impl EndpointsConfig {
-    pub fn find_endpoint(&self, search: EndpointId) -> Option<&Endpoint> {
-        for endpoint in &self.endpoints {
-            let endpoint_id: EndpointId = endpoint.into();
-            if search == endpoint_id {
-                return Some(endpoint);
-            }
-        }
-
-        return None;
-    }
-}
+impl EndpointsConfig {}
 
 #[derive(Debug, Deserialize)]
 pub struct Constants {
@@ -36,36 +25,35 @@ pub struct EndpointData {
     path: String,
 }
 
-#[derive(Debug, Deserialize, PartialEq, EnumDiscriminants, EnumIter)]
-#[strum_discriminants(name(EndpointId))]
+#[derive(Debug, Deserialize, PartialEq, EnumProperty)]
 #[serde(tag = "request")]
 pub enum Endpoint {
-    Authentication(EndpointData),
-    RateLimit(EndpointData),
+    #[strum(props(Path = "oauth2/token"))]
+    Authentication,
+    #[strum(props(Path = "1.1/application/rate_limit_status.json"))]
+    RateLimit,
+}
+
+impl Endpoint {
+    pub fn url(self) -> Url {
+        let config = get();
+
+        Url::parse(&format!(
+            "https://{}/{}",
+            config.constants.base_url,
+            self.get_str("Path").unwrap()
+        ))
+        .expect("lib error, could not find url for request type")
+    }
 }
 
 trait DefaultEndpoint {
     fn default() -> Self;
 }
 
-impl Endpoint {
-    pub fn url(&self, constants: &Constants) -> Url {
-        Url::parse(&format!(
-            "https://{}/{}/{}",
-            constants.base_url,
-            constants.version,
-            match self {
-                Self::Authentication(d) => d.path.clone(),
-                Self::RateLimit(d) => d.path.clone(),
-            }
-        ))
-        .unwrap()
-    }
-}
-
 impl DefaultEndpoint for Endpoint {
     fn default() -> Self {
-        Endpoint::Authentication(EndpointData::default())
+        Endpoint::Authentication
     }
 }
 
@@ -73,11 +61,4 @@ static CONFIG: OnceLock<EndpointsConfig> = OnceLock::new();
 
 fn get() -> &'static EndpointsConfig {
     CONFIG.get_or_init(|| toml::from_str(RAW).expect("endpoint config error"))
-}
-
-pub fn endpoint_url(endpoint_type: EndpointId) -> Option<Url> {
-    let config = get();
-    config
-        .find_endpoint(endpoint_type)
-        .map(|e| e.url(&config.constants))
 }

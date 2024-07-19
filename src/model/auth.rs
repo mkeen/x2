@@ -1,25 +1,35 @@
-use crate::requests::Request;
-
 use super::error::XError;
+use crate::{requests::Request, responses::Response};
+use oauth2::AccessToken;
+use serde::Serialize;
+use strum::EnumDiscriminants;
 
-#[derive(Debug)]
-pub enum RequestCredential {
-    Bearer(oauth2::AccessToken),
-}
-
-#[derive(Debug)]
-pub enum AppCredential {
+#[derive(Debug, Clone)]
+pub enum AppCredential<'a> {
     AppOnly {
-        client_id: oauth2::ClientId,
-        client_secret: oauth2::ClientSecret,
+        client_id: &'a str,
+        client_secret: &'a str,
     },
 }
 
-impl TryInto<RequestCredential> for AppCredential {
+#[derive(Debug, Clone, EnumDiscriminants, Serialize)] // todo impl eq
+#[strum_discriminants(name(CredentialType))]
+pub enum RequestCredential {
+    Bearer(String),
+}
+
+#[allow(refining_impl_trait)]
+impl<'a> TryInto<RequestCredential> for AppCredential<'a> {
     type Error = XError;
 
     fn try_into(self) -> Result<RequestCredential, XError> {
-        crate::requests::auth::Request::new(self).request()
+        crate::requests::auth::Request::new(self)
+            .request()
+            .map(|a| match a {
+                crate::responses::auth::Response::Bearer(bearer) => {
+                    RequestCredential::Bearer(bearer)
+                }
+            })
     }
 }
 
@@ -30,17 +40,17 @@ mod tests {
     #[test]
     // todo: this is a temporary test. can make integration tests tho, just need to read keys from ENV, etc
     fn create_basic_request_credential() {
-        let authentication = AppCredential::AppOnly {
-            client_id: oauth2::ClientId::new(String::from("7Vh2Xr8A35Vjn60eGfjaFqVeL")),
-            client_secret: oauth2::ClientSecret::new(String::from(
-                "zCEYKpHUJlBSzEET9uFrWoROl0rZGsCb1U2k4cCQY2clfb3WzI",
-            )),
-        };
+        let client_id = "gUJTmN2jcD7zOg2kFcbbS3fSp";
+        let client_secret = "8tWsU562uAzSFaCP7860rGHd0yldWgDJGwwvlyrugqoGBB8qon";
 
-        let request_credential: Result<RequestCredential, XError> = authentication.try_into();
+        let authentication: Result<RequestCredential, XError> = AppCredential::AppOnly {
+            client_id,
+            client_secret,
+        }
+        .try_into();
 
-        println!("{:?}", request_credential);
+        println!("{:?}", authentication);
 
-        assert!(request_credential.is_ok())
+        assert!(authentication.is_ok())
     }
 }

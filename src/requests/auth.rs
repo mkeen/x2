@@ -1,48 +1,59 @@
-use oauth2::{basic::BasicClient, reqwest::http_client, AuthUrl, TokenResponse, TokenUrl};
+use std::{collections::HashMap, io::Read};
+
+use urlencoding::encode;
 
 use crate::{
-    config::{endpoint_url, EndpointId},
-    model::{
-        auth::{AppCredential, RequestCredential},
-        error::XError,
-    },
+    config::Endpoint,
+    model::{auth::AppCredential, error::XError},
 };
 
-pub struct Request {
-    url: reqwest::Url,
-    credential: AppCredential,
+pub struct Request<'a> {
+    client: reqwest::blocking::Client,
+    credential: AppCredential<'a>,
 }
 
-impl Request {
-    pub fn new(credential: AppCredential) -> Self {
-        Request {
+impl<'a> Request<'a> {
+    pub fn new(credential: AppCredential<'a>) -> Self {
+        Self {
+            client: reqwest::blocking::Client::builder()
+                .http2_prior_knowledge()
+                .user_agent(super::APP_USER_AGENT)
+                .referer(false)
+                .https_only(true)
+                .gzip(true)
+                .build()
+                .unwrap(),
             credential,
-            url: endpoint_url(EndpointId::Authentication)
-                .expect("lib error, could not find url for request type"),
         }
     }
+}
 
-    pub fn client(self) -> BasicClient {
+impl<'a> super::Request<'a> for Request<'a> {
+    #[allow(refining_impl_trait)]
+    fn request(&self) -> Result<crate::responses::auth::Response, XError> {
         match self.credential {
             AppCredential::AppOnly {
                 client_id,
                 client_secret,
-            } => BasicClient::new(
-                client_id,
-                Some(client_secret),
-                AuthUrl::new("https://localhost/stub".to_string()).expect("sorry"),
-                Some(TokenUrl::from_url(self.url)),
-            ),
-        }
-    }
-}
+            } => {
+                let client_secret = encode(client_secret);
+                let client_id = encode(client_id);
 
-impl super::Request for Request {
-    fn request(self) -> Result<RequestCredential, XError> {
-        self.client()
-            .exchange_client_credentials()
-            .request(http_client)
-            .map_err(|e| XError::Auth(e.to_string()))
-            .map(|r| RequestCredential::Bearer(r.access_token().to_owned()))
+                let mut params = HashMap::new();
+                params.insert("grant_type", "client_credentials");
+
+                let bytes = self
+                    .client
+                    .post(Endpoint::Authentication.url())
+                    .basic_auth(client_id, Some(client_secret))
+                    .form(&params)
+                    .send()
+                    .map_err(|e| crate::model::error::XError::Auth(e))?
+                    .bytes()
+                    .map_err(|e| crate::model::error::XError::Auth(e))?;
+
+                crate::responses::auth::Response::try_from_bytes(bytes.to_vec())
+            }
+        }
     }
 }

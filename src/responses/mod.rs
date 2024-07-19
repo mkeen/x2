@@ -1,9 +1,8 @@
-use strum::EnumDiscriminants;
+use std::io::Bytes;
 
 use crate::model::auth::RequestCredential;
 
-#[derive(EnumDiscriminants)]
-#[strum_discriminants(name(ResponseId))]
-pub enum Response<'a> {
-    Bearer(RequestCredential<'a>),
-}
+pub trait Response<'a> {}
+
+pub mod auth;
+pub mod rate_limit;
