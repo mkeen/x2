@@ -1,6 +1,6 @@
 use std::io;
 
-use oauth2::{basic::BasicErrorResponseType, StandardErrorResponse};
+
 use thiserror::Error;
 
 #[derive(Error, Debug)]

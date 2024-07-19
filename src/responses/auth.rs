@@ -1,7 +1,7 @@
-use serde::{de::Visitor, ser::SerializeStruct, Deserialize, Deserializer, Serialize, Serializer};
+use serde::{de::Visitor, Deserialize, Deserializer};
 use std::fmt;
 
-use crate::model::{auth::RequestCredential, error::XError};
+use crate::model::{error::XError};
 
 #[derive(Clone, Deserialize)]
 #[serde(tag = "token_type", rename_all = "lowercase")]

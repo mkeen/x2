@@ -1,6 +1,6 @@
 use super::error::XError;
-use crate::{requests::Request, responses::Response};
-use oauth2::AccessToken;
+use crate::{requests::Request};
+
 use serde::Serialize;
 use strum::EnumDiscriminants;
 

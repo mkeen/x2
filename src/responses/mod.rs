@@ -1,6 +1,6 @@
-use std::io::Bytes;
 
-use crate::model::auth::RequestCredential;
+
+
 
 pub trait Response<'a> {}
 
