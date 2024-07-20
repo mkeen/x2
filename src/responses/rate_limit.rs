@@ -11,7 +11,7 @@ use crate::model::error::XError;
 #[derive(Clone, Deserialize, Debug)]
 pub struct Response {
     rate_limit_context: RateLimitContext,
-    resources: HashMap<String, HashMap<String, u64>>,
+    resources: HashMap<String, HashMap<String, HashMap<String, u128>>>,
 }
 
 #[derive(Clone, Debug)]
@@ -61,7 +61,7 @@ impl<'de> Deserialize<'de> for RateLimitContext {
                         }
                     }
                 }
-                Err(de::Error::missing_field("application"))
+                Err(de::Error::missing_field("application or access_token"))
             }
         }
 

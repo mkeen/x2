@@ -1,5 +1,3 @@
-use std::io::Read;
-
 use crate::model::{auth::RequestCredential, error::XError};
 
 pub struct Request {

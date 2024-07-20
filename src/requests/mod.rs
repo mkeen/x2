@@ -18,6 +18,8 @@ lazy_static! {
 
 pub mod auth;
 pub mod rate_limit;
+pub mod spaces_search;
+pub mod usage_tweets;
 
 pub trait Request<'a> {
     fn request(&self) -> Result<impl Response<'a>, XError>;

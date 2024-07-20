@@ -9,14 +9,12 @@ const RAW: &str = include_str!("./../api.toml");
 #[derive(Debug, Deserialize)]
 pub struct EndpointsConfig {
     constants: Constants,
-    endpoints: Vec<Endpoint>,
 }
 
 impl EndpointsConfig {}
 
 #[derive(Debug, Deserialize)]
 pub struct Constants {
-    version: String,
     base_url: String,
 }
 
@@ -32,6 +30,10 @@ pub enum Endpoint {
     Authentication,
     #[strum(props(Path = "1.1/application/rate_limit_status.json"))]
     RateLimit,
+    #[strum(props(Path = "2/usage/tweets", RateAppUnit = "50", RateAppMinute = "15"))]
+    UsageTweets,
+    #[strum(props(Path = "2/spaces/search", RateAppUnit = "50", RateAppMinute = "15"))]
+    SpacesSearch,
 }
 
 impl Endpoint {

@@ -8,11 +8,9 @@ mod tests {
         requests::Request,
     };
 
-    
-
     #[test]
     // todo: this is a temporary test. can make integration tests tho, just need to read keys from ENV, etc
-    fn create_basic_request_credential() {
+    fn do_rate_limit_() {
         let client_id = "gUJTmN2jcD7zOg2kFcbbS3fSp";
         let client_secret = "8tWsU562uAzSFaCP7860rGHd0yldWgDJGwwvlyrugqoGBB8qon";
 
@@ -23,10 +21,11 @@ mod tests {
         .try_into();
 
         if let Ok(auth) = authentication {
-            println!(
-                "{:?}",
-                crate::requests::rate_limit::Request::new(auth).request()
-            );
+            assert!(crate::requests::rate_limit::Request::new(auth)
+                .request()
+                .is_ok())
+        } else {
+            assert!(false);
         }
     }
 }

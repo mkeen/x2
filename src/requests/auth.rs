@@ -1,4 +1,4 @@
-use std::{collections::HashMap, io::Read};
+use std::collections::HashMap;
 
 use urlencoding::encode;
 
