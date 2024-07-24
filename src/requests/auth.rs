@@ -4,38 +4,51 @@ use urlencoding::encode;
 
 use crate::{
     config::Endpoint,
-    model::{auth::AppCredential, error::XError},
+    model::{
+        auth::{AppCredential, Credential},
+        error::XError,
+    },
+    responses::auth::*,
 };
 
 pub struct Request<'a> {
-    client: reqwest::blocking::Client,
-    credential: AppCredential<'a>,
+    client: &'a reqwest::blocking::Client,
+    credential: &'a Credential<'a>,
+}
+
+pub enum Expansion {}
+
+pub enum Params {}
+
+pub enum ParamName {}
+
+pub struct Fields {}
+
+pub struct Options {
+    params: Option<Params>,
+    expansions: Option<Vec<Expansion>>,
+    fields: Option<Fields>,
 }
 
 impl<'a> Request<'a> {
-    pub fn new(credential: AppCredential<'a>) -> Self {
+    pub fn new(credential: &'a Credential, _: Option<Options>) -> Self {
         Self {
-            client: reqwest::blocking::Client::builder()
-                .http2_prior_knowledge()
-                .user_agent(super::APP_USER_AGENT)
-                .referer(false)
-                .https_only(true)
-                .gzip(true)
-                .build()
-                .unwrap(),
+            client: super::client(),
             credential,
         }
     }
 }
 
 impl<'a> super::Request<'a> for Request<'a> {
+    type Response = Response;
+
     #[allow(refining_impl_trait)]
-    fn request(&self) -> Result<crate::responses::auth::Response, XError> {
+    fn request(&self) -> Result<Response, XError> {
         match self.credential {
-            AppCredential::AppOnly {
+            Credential::Unauthorized(AppCredential::AppOnly {
                 client_id,
                 client_secret,
-            } => {
+            }) => {
                 let client_secret = encode(client_secret);
                 let client_id = encode(client_id);
 
@@ -52,8 +65,36 @@ impl<'a> super::Request<'a> for Request<'a> {
                     .bytes()
                     .map_err(|e| crate::model::error::XError::Auth(e))?;
 
-                crate::responses::auth::Response::try_from_bytes(bytes.to_vec())
+                Response::try_into_from_bytes(&bytes.to_vec())
             }
+            Credential::Authorized(c) => match c {
+                crate::model::auth::RequestCredential::Bearer(bearer) => {
+                    Ok(Response::Bearer(bearer.into()))
+                }
+            },
         }
     }
 }
+
+// #[cfg(test)]
+// mod tests {
+//     use super::*;
+
+//     #[test]
+//     // todo: this is a temporary test. can make integration tests tho, just need to read keys from ENV, etc
+//     fn create_basic_request_credential<'a>() {
+//         let client_id = "gUJTmN2jcD7zOg2kFcbbS3fSp";
+//         let client_secret = "8tWsU562uAzSFaCP7860rGHd0yldWgDJGwwvlyrugqoGBB8qon";
+
+//         let authentication: Result<RequestCredential<'a>, XError> =
+//             Credential::AppCredential(AppCredential::AppOnly {
+//                 client_id,
+//                 client_secret,
+//             })
+//             .try_into();
+
+//         println!("{:?}", authentication);
+
+//         assert!(authentication.is_ok())
+//     }
+// }

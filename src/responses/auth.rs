@@ -1,20 +1,15 @@
 use serde::{de::Visitor, Deserialize, Deserializer};
 use std::fmt;
 
-use crate::model::{error::XError};
+use crate::model::error::XError;
 
-#[derive(Clone, Deserialize)]
+pub use super::Response as ResponseTrait;
+
+#[derive(Deserialize)]
 #[serde(tag = "token_type", rename_all = "lowercase")]
 pub enum Response {
     #[serde(deserialize_with = "deserialize_response")]
     Bearer(String),
-}
-
-impl Response {
-    pub fn try_from_bytes(bytes: Vec<u8>) -> Result<Self, XError> {
-        serde_json::from_slice::<Self>(&bytes)
-            .map_err(|e| XError::ParseResponseFailed(e.to_string()))
-    }
 }
 
 fn deserialize_response<'de, D>(deserializer: D) -> Result<String, D::Error>
@@ -49,4 +44,12 @@ where
     deserializer.deserialize_map(StringVisitor)
 }
 
-impl<'a> super::Response<'a> for Response {}
+impl ResponseTrait for Response {
+    type Response = Response;
+
+    fn try_into_from_bytes(bytes: &[u8]) -> Result<Response, XError> {
+        serde_json::from_slice::<Self>(bytes)
+            .map_err(|e| XError::Deserialize(e))
+            .map(|e| e)
+    }
+}

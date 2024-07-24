@@ -17,13 +17,13 @@ impl<'a> Into<&'a str> for UsageScope {
 
 pub struct Request<'a> {
     client: reqwest::blocking::Client,
-    credential: RequestCredential,
+    credential: RequestCredential<'a>,
     days: &'a str,
     // usage: UsageScope,
 }
 
-impl<'a> Request<'a> {
-    pub fn new(
+impl<'a> super::Request<'a> for Request<'a> {
+    fn new(
         credential: RequestCredential,
         days: Option<&'a str>,
         //usage: Option<UsageScope>,
@@ -41,14 +41,12 @@ impl<'a> Request<'a> {
             // usage: usage.unwrap_or(UsageScope::DailyProjectUsage),
         }
     }
-}
 
-impl<'a> super::Request<'a> for Request<'a> {
     #[allow(refining_impl_trait)]
     fn request(
         &self,
-    ) -> Result<crate::responses::usage_tweets::Response, crate::model::error::XError> {
-        match &(self.credential) {
+    ) -> Result<&crate::responses::usage_tweets::Response, crate::model::error::XError> {
+        match self.credential {
             RequestCredential::Bearer(bearer) => {
                 let params = &[("days", self.days)];
 
@@ -63,6 +61,38 @@ impl<'a> super::Request<'a> for Request<'a> {
                     &r.map_err(|e| XError::Auth(e))?.bytes().unwrap(),
                 )
             }
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::{
+        model::{
+            auth::{AppCredential, RequestCredential},
+            error::XError,
+        },
+        requests::Request,
+    };
+
+    #[test]
+    // todo: this is a temporary test. can make integration tests tho, just need to read keys from ENV, etc
+    fn integration_usage_tweets_with_defaults() {
+        let client_id = "gUJTmN2jcD7zOg2kFcbbS3fSp";
+        let client_secret = "8tWsU562uAzSFaCP7860rGHd0yldWgDJGwwvlyrugqoGBB8qon";
+
+        let authentication: Result<RequestCredential, XError> = AppCredential::AppOnly {
+            client_id,
+            client_secret,
+        }
+        .try_into();
+
+        if let Ok(auth) = authentication {
+            let r = crate::requests::usage_tweets::Request::new(auth, None).request();
+            //println!("{:?}", r);
+            assert!(r.is_ok());
+        } else {
+            assert!(false);
         }
     }
 }

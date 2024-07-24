@@ -1,10 +1,10 @@
-use std::fmt;
-
-use crate::model::error::XError;
+use crate::model::{error::XError, users::Includes};
 use chrono::{DateTime, Utc};
 use serde::Deserialize;
 
-#[derive(Clone, Debug, Deserialize)]
+pub use super::Response as ResponseTrait;
+
+#[derive(Debug, Deserialize)]
 pub struct Data {
     pub project_id: Option<String>,
     pub project_cap: Option<String>,
@@ -14,10 +14,11 @@ pub struct Data {
     pub daily_client_app_usage: Option<DailyClientAppUsage>,
 }
 
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Debug, Deserialize)]
 #[serde(tag = "data")]
 pub struct Response {
     data: Data,
+    includes: Option<Includes>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -37,10 +38,12 @@ pub struct DailyClientAppUsage {
     pub usage: Vec<Usage>,
 }
 
-impl Response {
-    pub fn try_from_bytes(bytes: &[u8]) -> Result<Self, XError> {
-        serde_json::from_slice::<Self>(bytes).map_err(|e| XError::Deserialize(e))
+impl ResponseTrait for Response {
+    type Response = Response;
+
+    fn try_into_from_bytes(bytes: &[u8]) -> Result<Response, XError> {
+        serde_json::from_slice::<Self>(bytes)
+            .map_err(|e| XError::Deserialize(e))
+            .map(|e| e)
     }
 }
-
-impl<'a> super::Response<'a> for Response {}

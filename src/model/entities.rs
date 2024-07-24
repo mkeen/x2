@@ -18,6 +18,11 @@ pub struct Entity {
 }
 
 #[derive(Debug, Deserialize)]
+pub struct UrlEntityInfoContainer {
+    pub urls: Option<Vec<UrlEntityInfo>>,
+}
+
+#[derive(Debug, Deserialize)]
 pub struct UrlEntityInfo {
     pub start: Option<usize>,
     pub end: Option<usize>,
@@ -37,6 +42,11 @@ pub struct DomainEntityInfo {
 }
 
 #[derive(Debug, Deserialize)]
+pub struct DomainEntityInfoContainer {
+    pub domains: Option<Vec<DomainEntityInfo>>,
+}
+
+#[derive(Debug, Deserialize)]
 pub struct HashtagEntityInfo {
     pub start: Option<usize>,
     pub end: Option<usize>,
@@ -44,10 +54,20 @@ pub struct HashtagEntityInfo {
 }
 
 #[derive(Debug, Deserialize)]
+pub struct HashtagEntityInfoContainer {
+    pub hashtags: Option<Vec<HashtagEntityInfo>>,
+}
+
+#[derive(Debug, Deserialize)]
 pub struct CashtagEntityInfo {
     pub start: Option<usize>,
     pub end: Option<usize>,
     pub cashtag: Option<String>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct CashtagEntityInfoContainer {
+    pub cashtags: Option<Vec<CashtagEntityInfo>>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -59,10 +79,15 @@ pub struct MentionEntityInfo {
 }
 
 #[derive(Debug, Deserialize)]
-pub enum Entities {
-    Urls(Option<Vec<UrlEntityInfo>>),
-    Hashtags(Option<Vec<HashtagEntityInfo>>),
-    Mentions(Option<Vec<MentionEntityInfo>>),
-    Cashtags(Option<Vec<CashtagEntityInfo>>),
-    Annotations(Option<Vec<Annotation>>),
+pub struct MentionEntityInfoContainer {
+    pub mentions: Option<Vec<MentionEntityInfo>>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct Entities {
+    url: Option<UrlEntityInfoContainer>,
+    hashtags: Option<Vec<HashtagEntityInfoContainer>>,
+    mentions: Option<Vec<MentionEntityInfoContainer>>,
+    cashtags: Option<Vec<CashtagEntityInfoContainer>>,
+    annotations: Option<Vec<Annotation>>,
 }

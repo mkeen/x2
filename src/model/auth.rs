@@ -1,10 +1,15 @@
 use super::error::XError;
-use crate::{requests::Request};
+use crate::requests::Request;
 
 use serde::Serialize;
 use strum::EnumDiscriminants;
 
-#[derive(Debug, Clone)]
+pub enum Credential<'a> {
+    Unauthorized(AppCredential<'a>),
+    Authorized(RequestCredential),
+}
+
+#[derive(Debug)]
 pub enum AppCredential<'a> {
     AppOnly {
         client_id: &'a str,
@@ -19,38 +24,21 @@ pub enum RequestCredential {
 }
 
 #[allow(refining_impl_trait)]
-impl<'a> TryInto<RequestCredential> for AppCredential<'a> {
+impl<'a> TryInto<RequestCredential> for &'a Credential<'a> {
     type Error = XError;
 
     fn try_into(self) -> Result<RequestCredential, XError> {
-        crate::requests::auth::Request::new(self)
-            .request()
-            .map(|a| match a {
-                crate::responses::auth::Response::Bearer(bearer) => {
-                    RequestCredential::Bearer(bearer)
-                }
-            })
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    // todo: this is a temporary test. can make integration tests tho, just need to read keys from ENV, etc
-    fn create_basic_request_credential() {
-        let client_id = "gUJTmN2jcD7zOg2kFcbbS3fSp";
-        let client_secret = "8tWsU562uAzSFaCP7860rGHd0yldWgDJGwwvlyrugqoGBB8qon";
-
-        let authentication: Result<RequestCredential, XError> = AppCredential::AppOnly {
-            client_id,
-            client_secret,
+        match self {
+            Credential::Unauthorized(app_credential) => {
+                crate::requests::auth::Request::new(self, None)
+                    .request()
+                    .map(|a| match a {
+                        crate::responses::auth::Response::Bearer(bearer) => {
+                            RequestCredential::Bearer(bearer.into())
+                        }
+                    })
+            }
+            Credential::Authorized(request_credential) => Ok(request_credential.to_owned()),
         }
-        .try_into();
-
-        println!("{:?}", authentication);
-
-        assert!(authentication.is_ok())
     }
 }

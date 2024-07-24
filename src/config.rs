@@ -34,9 +34,17 @@ pub enum Endpoint {
     UsageTweets,
     #[strum(props(Path = "2/spaces/search", RateAppUnit = "50", RateAppMinute = "15"))]
     SpacesSearch,
+    #[strum(props(
+        Path = "2/users/by",
+        RateAppUnit = "300",
+        RateAppMinute = "15",
+        RateUserUnit = "900",
+        RateUserMinute = "15",
+    ))]
+    UserLookup,
 }
 
-impl Endpoint {
+impl<'a> Endpoint {
     pub fn url(self) -> Url {
         let config = get();
 

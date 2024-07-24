@@ -22,4 +22,6 @@ pub enum XError {
     Deserialize(serde_json::Error),
     #[error("Reqwest Error: {0}")]
     Reqwest(reqwest::Error),
+    #[error("Invalid UTF8")]
+    InvalidUtf8Response,
 }

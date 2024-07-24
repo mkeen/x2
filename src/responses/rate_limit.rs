@@ -8,7 +8,9 @@ use serde_json::Value;
 use crate::model::auth::RequestCredential;
 use crate::model::error::XError;
 
-#[derive(Clone, Deserialize, Debug)]
+pub use super::Response as ResponseTrait;
+
+#[derive(Deserialize, Debug)]
 pub struct Response {
     rate_limit_context: RateLimitContext,
     resources: HashMap<String, HashMap<String, HashMap<String, u128>>>,
@@ -18,12 +20,6 @@ pub struct Response {
 pub enum RateLimitContext {
     Application(String),
     AccessToken(RequestCredential),
-}
-
-impl Response {
-    pub fn try_from_bytes(bytes: &[u8]) -> Result<Self, XError> {
-        serde_json::from_slice::<Self>(bytes).map_err(|e| XError::Lib(e.to_string()))
-    }
 }
 
 impl<'de> Deserialize<'de> for RateLimitContext {
@@ -69,4 +65,12 @@ impl<'de> Deserialize<'de> for RateLimitContext {
     }
 }
 
-impl<'a> super::Response<'a> for Response {}
+impl ResponseTrait for Response {
+    type Response = Response;
+
+    fn try_into_from_bytes(bytes: &[u8]) -> Result<Response, XError> {
+        serde_json::from_slice::<Self>(bytes)
+            .map_err(|e| XError::Deserialize(e))
+            .map(|e| e)
+    }
+}

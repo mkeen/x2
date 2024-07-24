@@ -1,4 +1,5 @@
 use chrono::{DateTime, Utc};
+use getset::Getters;
 use serde::Deserialize;
 use strum::{Display, EnumString};
 
@@ -25,8 +26,10 @@ pub struct PublicMetrics {
     pub listed_count: Option<String>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Display)]
+#[serde(rename_all = "snake_case")]
 pub enum Includes {
+    #[strum(to_string = "tweets")]
     Tweets(Vec<Tweet>),
 }
 
@@ -67,23 +70,24 @@ pub enum Field {
     Withheld,
 }
 
-#[derive(Debug, Deserialize)]
+pub type Users = Vec<User>;
+
+#[derive(Debug, Deserialize, Getters)]
 pub struct User {
-    pub id: Option<String>,
-    pub name: Option<String>,
-    pub username: Option<String>,
-    pub created_at: Option<DateTime<Utc>>,
-    pub most_recent_tweet_id: Option<String>,
-    pub protected: Option<bool>,
-    pub withheld: Option<Withheld>,
-    pub location: Option<String>,
-    pub url: Option<String>,
-    pub description: Option<String>,
-    pub verified: Option<bool>,
-    pub verified_type: Option<VerifiedType>,
-    pub entities: Option<Entities>,
-    pub profile_image_url: Option<String>,
-    pub public_metrics: Option<PublicMetrics>,
-    pub pinned_tweet_id: Option<String>,
-    pub includes: Option<Includes>,
+    id: Option<String>,
+    name: Option<String>,
+    username: Option<String>,
+    created_at: Option<DateTime<Utc>>,
+    most_recent_tweet_id: Option<String>,
+    protected: Option<bool>,
+    withheld: Option<Withheld>,
+    location: Option<String>,
+    url: Option<String>,
+    description: Option<String>,
+    verified: Option<bool>,
+    verified_type: Option<VerifiedType>,
+    entities: Option<Entities>,
+    profile_image_url: Option<String>,
+    public_metrics: Option<PublicMetrics>,
+    pinned_tweet_id: Option<String>,
 }

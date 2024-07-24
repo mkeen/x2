@@ -1,12 +1,13 @@
 use chrono::{DateTime, Utc};
 use serde::Deserialize;
+use strum::Display;
 
 use super::{
     entities::{DomainEntityInfo, Entities, Entity},
     media::Media,
     places::Place,
     polls::Poll,
-    user::User,
+    users::User,
     withheld::Withheld,
 };
 
@@ -42,10 +43,12 @@ pub struct Geo {
     pub coordinates: Option<Coordinates>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Display)]
 #[serde(rename_all = "snake_case")]
 pub enum ContextAnnotations {
+    #[strum(to_string = "domain")]
     Domain(Option<Vec<DomainEntityInfo>>),
+    #[strum(to_string = "entity")]
     Entity(Option<Vec<Entity>>),
 }
 
@@ -86,11 +89,14 @@ pub struct PromotedMetrics {
     pub like_count: Option<u64>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Display)]
 #[serde(rename_all = "snake_case")]
 pub enum ReplySettings {
+    #[strum(to_string = "everyone")]
     Everyone,
+    #[strum(to_string = "mentioned_users")]
     MentionedUsers,
+    #[strum(to_string = "following")]
     Following,
 }
 
@@ -101,6 +107,53 @@ pub struct Includes {
     pub places: Option<Vec<Place>>,
     pub media: Option<Vec<Media>>,
     pub polls: Option<Vec<Poll>>,
+}
+
+#[derive(Debug, Deserialize, Display)]
+#[serde(rename_all = "snake_case")]
+pub enum Field {
+    #[strum(to_string = "attachments")]
+    Attachments,
+    #[strum(to_string = "author_id")]
+    AuthorId,
+    #[strum(to_string = "context_annotations")]
+    ContextAnnotations,
+    #[strum(to_string = "conversation_id")]
+    ConversationId,
+    #[strum(to_string = "created_at")]
+    CreatedAt,
+    #[strum(to_string = "edit_controls")]
+    EditControls,
+    #[strum(to_string = "entities")]
+    Entities,
+    #[strum(to_string = "geo")]
+    Geo,
+    #[strum(to_string = "id")]
+    Id,
+    #[strum(to_string = "in_reply_to_user_id")]
+    InReplyToUserId,
+    #[strum(to_string = "lang")]
+    Lang,
+    #[strum(to_string = "non_public_metrics")]
+    NonPublicMetrics,
+    #[strum(to_string = "public_metrics")]
+    PublicMetrics,
+    #[strum(to_string = "organic_metrics")]
+    OrganicMetrics,
+    #[strum(to_string = "promoted_metrics")]
+    PromotedMetrics,
+    #[strum(to_string = "possibly_sensitive")]
+    PossiblySensitive,
+    #[strum(to_string = "referenced_tweets")]
+    ReferencedTweets,
+    #[strum(to_string = "reply_settings")]
+    ReplySettings,
+    #[strum(to_string = "source")]
+    Source,
+    #[strum(to_string = "text")]
+    Text,
+    #[strum(to_string = "withheld")]
+    Withheld,
 }
 
 #[derive(Debug, Deserialize)]
@@ -129,36 +182,4 @@ pub struct Tweet {
     pub reply_settings: Option<ReplySettings>,
     pub source: Option<String>,
     pub includes: Option<Includes>,
-}
-
-#[cfg(test)]
-mod tests {
-    use crate::{
-        model::{
-            auth::{AppCredential, RequestCredential},
-            error::XError,
-        },
-        requests::Request,
-    };
-
-    #[test]
-    // todo: this is a temporary test. can make integration tests tho, just need to read keys from ENV, etc
-    fn integration_usage_tweets_with_defaults() {
-        let client_id = "gUJTmN2jcD7zOg2kFcbbS3fSp";
-        let client_secret = "8tWsU562uAzSFaCP7860rGHd0yldWgDJGwwvlyrugqoGBB8qon";
-
-        let authentication: Result<RequestCredential, XError> = AppCredential::AppOnly {
-            client_id,
-            client_secret,
-        }
-        .try_into();
-
-        if let Ok(auth) = authentication {
-            let r = crate::requests::usage_tweets::Request::new(auth, None).request();
-            //println!("{:?}", r);
-            assert!(r.is_ok());
-        } else {
-            assert!(false);
-        }
-    }
 }
