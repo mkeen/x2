@@ -1,6 +1,6 @@
 use chrono::{DateTime, Utc};
 use serde::Deserialize;
-use strum::Display;
+use strum::AsRefStr;
 
 use super::{
     entities::{DomainEntityInfo, Entities, Entity},
@@ -43,12 +43,12 @@ pub struct Geo {
     pub coordinates: Option<Coordinates>,
 }
 
-#[derive(Debug, Deserialize, Display)]
+#[derive(Debug, Deserialize, AsRefStr)]
 #[serde(rename_all = "snake_case")]
 pub enum ContextAnnotations {
-    #[strum(to_string = "domain")]
+    #[strum(serialize = "domain")]
     Domain(Option<Vec<DomainEntityInfo>>),
-    #[strum(to_string = "entity")]
+    #[strum(serialize = "entity")]
     Entity(Option<Vec<Entity>>),
 }
 
@@ -89,14 +89,14 @@ pub struct PromotedMetrics {
     pub like_count: Option<u64>,
 }
 
-#[derive(Debug, Deserialize, Display)]
+#[derive(Debug, Deserialize, AsRefStr)]
 #[serde(rename_all = "snake_case")]
 pub enum ReplySettings {
-    #[strum(to_string = "everyone")]
+    #[strum(serialize = "everyone")]
     Everyone,
-    #[strum(to_string = "mentioned_users")]
+    #[strum(serialize = "mentioned_users")]
     MentionedUsers,
-    #[strum(to_string = "following")]
+    #[strum(serialize = "following")]
     Following,
 }
 
@@ -109,50 +109,50 @@ pub struct Includes {
     pub polls: Option<Vec<Poll>>,
 }
 
-#[derive(Debug, Deserialize, Display)]
+#[derive(Debug, Deserialize, AsRefStr)]
 #[serde(rename_all = "snake_case")]
 pub enum Field {
-    #[strum(to_string = "attachments")]
+    #[strum(serialize = "attachments")]
     Attachments,
-    #[strum(to_string = "author_id")]
+    #[strum(serialize = "author_id")]
     AuthorId,
-    #[strum(to_string = "context_annotations")]
+    #[strum(serialize = "context_annotations")]
     ContextAnnotations,
-    #[strum(to_string = "conversation_id")]
+    #[strum(serialize = "conversation_id")]
     ConversationId,
-    #[strum(to_string = "created_at")]
+    #[strum(serialize = "created_at")]
     CreatedAt,
-    #[strum(to_string = "edit_controls")]
+    #[strum(serialize = "edit_controls")]
     EditControls,
-    #[strum(to_string = "entities")]
+    #[strum(serialize = "entities")]
     Entities,
-    #[strum(to_string = "geo")]
+    #[strum(serialize = "geo")]
     Geo,
-    #[strum(to_string = "id")]
+    #[strum(serialize = "id")]
     Id,
-    #[strum(to_string = "in_reply_to_user_id")]
+    #[strum(serialize = "in_reply_to_user_id")]
     InReplyToUserId,
-    #[strum(to_string = "lang")]
+    #[strum(serialize = "lang")]
     Lang,
-    #[strum(to_string = "non_public_metrics")]
+    #[strum(serialize = "non_public_metrics")]
     NonPublicMetrics,
-    #[strum(to_string = "public_metrics")]
+    #[strum(serialize = "public_metrics")]
     PublicMetrics,
-    #[strum(to_string = "organic_metrics")]
+    #[strum(serialize = "organic_metrics")]
     OrganicMetrics,
-    #[strum(to_string = "promoted_metrics")]
+    #[strum(serialize = "promoted_metrics")]
     PromotedMetrics,
-    #[strum(to_string = "possibly_sensitive")]
+    #[strum(serialize = "possibly_sensitive")]
     PossiblySensitive,
-    #[strum(to_string = "referenced_tweets")]
+    #[strum(serialize = "referenced_tweets")]
     ReferencedTweets,
-    #[strum(to_string = "reply_settings")]
+    #[strum(serialize = "reply_settings")]
     ReplySettings,
-    #[strum(to_string = "source")]
+    #[strum(serialize = "source")]
     Source,
-    #[strum(to_string = "text")]
+    #[strum(serialize = "text")]
     Text,
-    #[strum(to_string = "withheld")]
+    #[strum(serialize = "withheld")]
     Withheld,
 }
 

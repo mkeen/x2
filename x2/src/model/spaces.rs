@@ -1,17 +1,17 @@
 use chrono::{DateTime, Utc};
 use serde::Deserialize;
-use strum::{Display, EnumString};
+use strum::{AsRefStr, EnumCount};
 
 use super::users::User;
 
-#[derive(Debug, Deserialize, EnumString, Display)]
+#[derive(Debug, Deserialize, AsRefStr)]
 #[serde(rename_all = "snake_case")]
 pub enum State {
     #[strum(serialize = "live")]
     Live,
-    #[strum(to_string = "scheduled")]
+    #[strum(serialize = "scheduled")]
     Scheduled,
-    #[strum(to_string = "all")]
+    #[strum(serialize = "all")]
     All,
 }
 
@@ -41,42 +41,42 @@ pub struct Includes {
 //     TopicIds,
 // }
 
-#[derive(Debug, Display, Deserialize, EnumString, PartialEq)]
+#[derive(Debug, Deserialize, AsRefStr, PartialEq, EnumCount)]
 #[serde(rename_all = "snake_case")]
 pub enum Field {
-    #[strum(to_string = "host_ids")]
+    #[strum(serialize = "host_ids")]
     HostIds,
-    #[strum(to_string = "created_at")]
+    #[strum(serialize = "created_at")]
     CreatedAt,
-    #[strum(to_string = "creator_id")]
+    #[strum(serialize = "creator_id")]
     CreatorId,
-    #[strum(to_string = "id")]
+    #[strum(serialize = "id")]
     Id,
-    #[strum(to_string = "lang")]
+    #[strum(serialize = "lang")]
     Lang,
-    #[strum(to_string = "invited_user_ids")]
+    #[strum(serialize = "invited_user_ids")]
     InvitedUserIds,
-    #[strum(to_string = "participant_count")]
+    #[strum(serialize = "participant_count")]
     ParticipantCount,
-    #[strum(to_string = "speaker_ids")]
+    #[strum(serialize = "speaker_ids")]
     SpeakerIds,
-    #[strum(to_string = "started_at")]
+    #[strum(serialize = "started_at")]
     StartedAt,
-    #[strum(to_string = "ended_at")]
+    #[strum(serialize = "ended_at")]
     EndedAt,
-    #[strum(to_string = "subscriber_count")]
+    #[strum(serialize = "subscriber_count")]
     SubscriberCount,
-    #[strum(to_string = "topic_ids")]
+    #[strum(serialize = "topic_ids")]
     TopicIds,
-    #[strum(to_string = "state")]
+    #[strum(serialize = "state")]
     State,
-    #[strum(to_string = "title")]
+    #[strum(serialize = "title")]
     Title,
-    #[strum(to_string = "updated_at")]
+    #[strum(serialize = "updated_at")]
     UpdatedAt,
-    #[strum(to_string = "scheduled_start")]
+    #[strum(serialize = "scheduled_start")]
     ScheduledStart,
-    #[strum(to_string = "is_ticketed")]
+    #[strum(serialize = "is_ticketed")]
     IsTicketed,
 }
 

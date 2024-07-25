@@ -13,7 +13,7 @@ use crate::{
 
 pub struct Request<'a> {
     client: &'a reqwest::blocking::Client,
-    credential: &'a Credential<'a>,
+    credential: &'a Credential,
 }
 
 pub enum Expansion {}

@@ -1,4 +1,5 @@
 use std::{fmt::Display, sync::OnceLock};
+use strum::AsRefStr;
 
 pub use reqwest;
 
@@ -15,24 +16,9 @@ pub mod users;
 pub trait Request<'a> {
     type Response;
 
+    fn authorize(&mut self) -> Result<(), XError>;
+    fn is_authorized(&self) -> bool;
     fn request(&self) -> Result<Self::Response, XError>;
-}
-
-pub fn fields_as_csv<T>(fields: &Vec<T>) -> String
-where
-    T: Display,
-{
-    fields
-        .into_iter()
-        .map(|e| e.to_string())
-        .collect::<Vec<String>>()
-        .join(",")
-}
-
-pub fn push_to_params(target: &mut Vec<(String, String)>, param: &String, name: &str) {
-    if !param.is_empty() {
-        target.push((name.into(), param.into()))
-    }
 }
 
 static BASE_CLIENT: OnceLock<reqwest::blocking::Client> = OnceLock::new();

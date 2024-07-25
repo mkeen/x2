@@ -1,0 +1,27 @@
+[package]
+name = "x2"
+version = "0.1.0"
+edition = "2021"
+description = "X API"
+repository = "https://github.com/mkeen/x2"
+homepage = "https://mikekeen.com/x2"
+documentation = "https://docs.rs/x2"
+license = "Apache-2.0"
+readme = "README"
+authors = ["Mike Keen <mwk@mikekeen.com>"]
+
+[dependencies]
+x2-derive = { path = "../x2-derive"}
+clap = "4.5.8"
+reqwest = {version = "0.11", features = ["gzip", "blocking", "json"]}
+serde = {version = "1.0.204", features = ["derive"]}
+thiserror = "1.0.61"
+toml = "0.8.14"
+strum = { version = "0.26.3", features = ["derive"] }
+serde_json = "1.0.120"
+urlencoding = "2.1.3"
+lazy_static = "1.5.0"
+chrono = "0.4.38"
+geojson = "0.24.1"
+getset = "0.1.2"
+arrayvec = "0.7.4"

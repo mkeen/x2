@@ -1,11 +1,11 @@
 use serde::Deserialize;
-use strum::EnumString;
+use strum::AsRefStr;
 
-#[derive(Debug, EnumString, Deserialize)]
+#[derive(Debug, AsRefStr, Deserialize)]
 pub enum Scope {
-    #[strum(to_string = "tweet")]
+    #[strum(serialize = "tweet")]
     Tweet,
-    #[strum(to_string = "user")]
+    #[strum(serialize = "user")]
     User,
 }
 

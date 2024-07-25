@@ -1,20 +1,20 @@
 use chrono::{DateTime, Utc};
 use getset::Getters;
 use serde::Deserialize;
-use strum::{Display, EnumString};
+use strum::{AsRefStr, EnumCount};
 
 use super::{entities::Entities, tweets::Tweet, withheld::Withheld};
 
-#[derive(Debug, EnumString, Deserialize, Display)]
+#[derive(Debug, AsRefStr, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum VerifiedType {
-    #[strum(to_string = "blue")]
+    #[strum(serialize = "blue")]
     Blue,
-    #[strum(to_string = "business")]
+    #[strum(serialize = "business")]
     Business,
-    #[strum(to_string = "government")]
+    #[strum(serialize = "government")]
     Government,
-    #[strum(to_string = "none")]
+    #[strum(serialize = "none")]
     None,
 }
 
@@ -26,47 +26,47 @@ pub struct PublicMetrics {
     pub listed_count: Option<String>,
 }
 
-#[derive(Debug, Deserialize, Display)]
+#[derive(Debug, Deserialize, AsRefStr)]
 #[serde(rename_all = "snake_case")]
 pub enum Includes {
-    #[strum(to_string = "tweets")]
+    #[strum(serialize = "tweets")]
     Tweets(Vec<Tweet>),
 }
 
-#[derive(Deserialize, Display, EnumString)]
+#[derive(Deserialize, AsRefStr, EnumCount)]
 #[serde(rename_all = "snake_case")]
 pub enum Field {
-    #[strum(to_string = "created_at")]
+    #[strum(serialize = "created_at")]
     CreatedAt,
-    #[strum(to_string = "description")]
+    #[strum(serialize = "description")]
     Description,
-    #[strum(to_string = "entities")]
+    #[strum(serialize = "entities")]
     Entities,
-    #[strum(to_string = "id")]
+    #[strum(serialize = "id")]
     Id,
-    #[strum(to_string = "location")]
+    #[strum(serialize = "location")]
     Location,
-    #[strum(to_string = "most_recent_tweet_id")]
+    #[strum(serialize = "most_recent_tweet_id")]
     MostRecentTweetId,
-    #[strum(to_string = "name")]
+    #[strum(serialize = "name")]
     Name,
-    #[strum(to_string = "pinned_tweet_id")]
+    #[strum(serialize = "pinned_tweet_id")]
     PinnedTweetId,
-    #[strum(to_string = "profile_image_url")]
+    #[strum(serialize = "profile_image_url")]
     ProfileImageUrl,
-    #[strum(to_string = "protected")]
+    #[strum(serialize = "protected")]
     Protected,
-    #[strum(to_string = "public_metrics")]
+    #[strum(serialize = "public_metrics")]
     PublicMetrics,
-    #[strum(to_string = "url")]
+    #[strum(serialize = "url")]
     Url,
-    #[strum(to_string = "username")]
+    #[strum(serialize = "username")]
     Username,
-    #[strum(to_string = "verified")]
+    #[strum(serialize = "verified")]
     Verified,
-    #[strum(to_string = "verified_type")]
+    #[strum(serialize = "verified_type")]
     VerifiedType,
-    #[strum(to_string = "withheld")]
+    #[strum(serialize = "withheld")]
     Withheld,
 }
 
