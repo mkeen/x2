@@ -1,12 +1,14 @@
-use serde::{de::Visitor, Deserialize, Deserializer};
 use std::fmt;
+
+use serde::{de::Visitor, Deserialize, Deserializer};
+use strum::EnumIs;
 
 use crate::model::error::XError;
 
-pub use super::Response as ResponseTrait;
+pub use super::{Response as ResponseTrait, *};
 
-#[derive(Deserialize)]
-#[serde(tag = "token_type", rename_all = "lowercase")]
+#[derive(Deserialize, Debug, PartialEq, Eq, EnumIs)]
+#[serde(tag = "token_type", rename_all = "snake_case")]
 pub enum Response {
     #[serde(deserialize_with = "deserialize_response")]
     Bearer(String),

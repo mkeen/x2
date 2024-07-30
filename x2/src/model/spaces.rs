@@ -1,10 +1,12 @@
-use chrono::{DateTime, Utc};
+use std::default;
+
+use chrono::{self, DateTime, Utc};
 use serde::Deserialize;
 use strum::{AsRefStr, EnumCount};
 
 use super::users::User;
 
-#[derive(Debug, Deserialize, AsRefStr)]
+#[derive(Debug, Deserialize, AsRefStr, Default)]
 #[serde(rename_all = "snake_case")]
 pub enum State {
     #[strum(serialize = "live")]
@@ -12,6 +14,7 @@ pub enum State {
     #[strum(serialize = "scheduled")]
     Scheduled,
     #[strum(serialize = "all")]
+    #[default]
     All,
 }
 

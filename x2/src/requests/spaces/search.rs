@@ -1,14 +1,15 @@
-use arrayvec::ArrayVec;
 use serde::Deserialize;
 use strum::{AsRefStr, EnumCount};
-use x2_derive::request;
 
 use crate::{
     model::{
-        auth::*, error::XError, spaces::*, topics::Field as TopicField, users::Field as UserField,
+        auth::Context, error::XError, spaces::*, topics::Field as TopicField,
+        users::Field as UserField,
     },
     responses::spaces::search::*,
 };
+
+use super::Authorized;
 
 #[derive(AsRefStr, Deserialize, EnumCount)]
 #[serde(rename_all = "snake_case")]
@@ -25,151 +26,115 @@ pub enum Expansion {
     TopicsIds,
 }
 
+static DEFAULT_FIELDS_SPACE: [Field; 0] = [];
+static DEFAULT_FIELDS_TOPIC: [TopicField; 0] = [];
+static DEFAULT_FIELDS_USER: [UserField; 0] = [];
+
 pub struct Fields<'a> {
     space: &'a [Field],
     topic: &'a [TopicField],
     user: &'a [UserField],
 }
 
-pub struct Request<'a> {
-    client: &'a reqwest::blocking::Client,
-    credential: &'a Credential,
-    authorization: Option<&'a RequestCredential>,
-    params: [(&'a str, &'a str); 6],
+impl<'a> Default for Fields<'a> {
+    fn default() -> Self {
+        Self {
+            space: &DEFAULT_FIELDS_SPACE,
+            topic: &DEFAULT_FIELDS_TOPIC,
+            user: &DEFAULT_FIELDS_USER,
+        }
+    }
 }
 
-impl<'a> Request<'a> {
+pub struct Request {
+    builder: super::RequestBuilder,
+    expansions: String,
+    space_fields: String,
+    user_fields: String,
+    topic_fields: String,
+}
+
+impl<'a> Request {
     fn new(
-        credential: &'a Credential,
-        query: &str,
-        state: Option<State>,
+        auth: &'a Context,
+        query: &'a str,
+        state: State,
         expansions: Option<&[Expansion]>,
-        fields: Option<&Fields>,
+        fields: Option<Fields>,
     ) -> Self {
-        let params: [(&str, &str); 6] = [
-            // todo dont send all args if some are empty
-            ("query", query),
-            ("state", state.unwrap_or(State::All).as_ref()),
-            (
-                "expansions",
-                match expansions {
-                    Some(expansions) => &expansions
-                        .iter()
-                        .map(|e| e.as_ref())
-                        .collect::<ArrayVec<&str, 5>>() // arg, can't use Expansion::COUNT -- todo! // and i have to use a ArrayVec since there's no [] iter collect support :(
-                        .join(","),
-                    None => "",
-                },
-            ),
-            (
-                "space.fields",
-                match fields {
-                    Some(fields) => &fields
-                        .space
-                        .iter()
-                        .map(|e| e.as_ref())
-                        .collect::<ArrayVec<&str, 17>>() // arg, can't use Field::COUNT -- todo!
-                        .join(","),
-                    None => "",
-                },
-            ),
-            (
-                "user.fields",
-                match fields {
-                    Some(fields) => &fields
-                        .user
-                        .iter()
-                        .map(|e| e.as_ref())
-                        .collect::<ArrayVec<&str, 16>>() // arg, can't use Field::COUNT -- todo!
-                        .join(","),
-                    None => "",
-                },
-            ),
-            (
-                "topic.fields",
-                match fields {
-                    Some(fields) => &fields
-                        .topic
-                        .iter()
-                        .map(|e| e.as_ref())
-                        .collect::<ArrayVec<&str, 3>>() // arg, can't use Field::COUNT -- todo!
-                        .join(","),
-                    None => "",
-                },
-            ),
-        ];
+        let fields = fields.unwrap_or_default();
+        let expansions = expansions.unwrap_or_default();
+
+        let expansions = super::collect_csv::<Expansion, { Expansion::COUNT }>(expansions);
+        let space_fields = super::collect_csv::<Field, { Field::COUNT }>(fields.space);
+        let user_fields = super::collect_csv::<UserField, { UserField::COUNT }>(fields.user);
+        let topic_fields = super::collect_csv::<TopicField, { TopicField::COUNT }>(fields.topic);
 
         Self {
-            client: super::super::client(),
-            credential,
-            authorization: None,
-            params,
+            builder: Self::builder_with_auth(
+                auth,
+                super::super::client()
+                    .get(crate::config::Endpoint::SpacesSearch.url())
+                    .query(&[
+                        ("query", query),
+                        ("state", state.as_ref()),
+                        ("expansions", &expansions),
+                        ("space.fields", &space_fields),
+                        ("user.fields", &user_fields),
+                        ("topic.fields", &topic_fields),
+                    ]),
+            ),
+            expansions,
+            space_fields,
+            user_fields,
+            topic_fields,
         }
     }
 }
 
-#[request]
-impl<'a> super::Request<'a> for Request<'a> {
-    fn authorize(&mut self) -> Result<(), XError> {
-        match self.credential.try_into() {
-            Ok(request_credential) => {
-                self.authorization = request_credential;
-                Ok(())
-            }
-            Err(e) => Err(e),
-        }
-    }
+impl Authorized<Response> for Request {}
 
-    fn request(&self) -> Result<Self::Response, XError> {
-        match &self.credential {
-            RequestCredential::Bearer(bearer) => {
-                let result = self
-                    .client
-                    .get(crate::config::Endpoint::SpacesSearch.url())
-                    .query(&self.params)
-                    .bearer_auth(bearer)
-                    .send()
-                    .map_err(|e| XError::Generic(e.status().unwrap_or_default(), e.to_string()))?;
+impl<'a> super::Request<Response> for Request {
+    fn request(self) -> Result<Response, XError> {
+        self.builder
+            .send()
+            .map_err(|e| XError::Socket(e.to_string()))
+            .map(|response| match response.status().is_success() {
+                true => Response::try_into_from_bytes(
+                    &response.bytes().map_err(|e| XError::Reqwest(e))?,
+                ),
 
-                match result.status().is_success() {
-                    true => Self::Response::try_into_from_bytes(
-                        &result.bytes().map_err(|e| XError::Reqwest(e))?,
-                    ),
-                    false => Err(XError::Generic(
-                        result.status(),
-                        result.text().unwrap_or("Unknown".into()),
-                    )),
-                }
-            }
-        }
+                false => Err(XError::HttpGeneric(
+                    response.status(),
+                    response.text().unwrap_or("Unknown".into()),
+                )),
+            })?
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::requests::{spaces::search::*, Request as RequestTrait};
+    use crate::{
+        model::auth,
+        requests::{spaces::search::*, Request as RequestTrait},
+    };
 
     #[test]
     fn integration_spaces_search_with_defaults() {
-        let credential = Credential::Unauthorized(AppCredential::AppOnly {
-            client_id: String::from("gUJTmN2jcD7zOg2kFcbbS3fSp"),
-            client_secret: "8tWsU562uAzSFaCP7860rGHd0yldWgDJGwwvlyrugqoGBB8qon".into(),
-        });
+        let id = "GJe6IFjFNwveQzBhJmaMIZzW5";
+        let secret = "f9kmkg3eQkxNB7thibc5lhhgavCq4eQmMrTdeO9aw4rIz4Hofb";
 
-        let result = Request::new(
-            &credential,
-            Some(Options {
-                params: &Params {
-                    query: "sports",
-                    state: &State::All,
-                },
-                fields: None,
-                expansions: None,
-            }),
-        )
-        .request();
+        let context = auth::Context::Caller(auth::Method::AppOnly { id, secret });
 
-        println!("{:?}", result);
-        assert!(result.is_ok());
+        // not testing authentication here, so will just unwrap and assume all is well
+        let authorization = context.authorize().unwrap();
+
+        let response = Request::new(&authorization, "crypto", State::All, None, None).request();
+
+        assert!(response.is_ok());
+
+        let response = response.unwrap();
+
+        assert!(!response.spaces().is_empty());
     }
 }

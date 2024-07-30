@@ -16,7 +16,7 @@ pub struct Response {
     resources: HashMap<String, HashMap<String, HashMap<String, u128>>>,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub enum RateLimitContext {
     Application(String),
     AccessToken(RequestCredential),

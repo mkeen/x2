@@ -5,22 +5,22 @@ use strum::EnumProperty;
 use toml;
 
 const RAW: &str = include_str!("./../api.toml");
+static CONFIG: OnceLock<EndpointsConfig> = OnceLock::new();
+
+fn get() -> &'static EndpointsConfig {
+    CONFIG.get_or_init(|| toml::from_str(RAW).expect("endpoint config error"))
+}
 
 #[derive(Debug, Deserialize)]
-pub struct EndpointsConfig {
+struct EndpointsConfig {
     constants: Constants,
 }
 
 impl EndpointsConfig {}
 
 #[derive(Debug, Deserialize)]
-pub struct Constants {
+struct Constants {
     base_url: String,
-}
-
-#[derive(Debug, Deserialize, PartialEq, Default)]
-pub struct EndpointData {
-    path: String,
 }
 
 #[derive(Debug, Deserialize, PartialEq, EnumProperty)]
@@ -55,20 +55,4 @@ impl<'a> Endpoint {
         ))
         .expect("lib error, could not find url for request type")
     }
-}
-
-trait DefaultEndpoint {
-    fn default() -> Self;
-}
-
-impl DefaultEndpoint for Endpoint {
-    fn default() -> Self {
-        Endpoint::Authentication
-    }
-}
-
-static CONFIG: OnceLock<EndpointsConfig> = OnceLock::new();
-
-fn get() -> &'static EndpointsConfig {
-    CONFIG.get_or_init(|| toml::from_str(RAW).expect("endpoint config error"))
 }

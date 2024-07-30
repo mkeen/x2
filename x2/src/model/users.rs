@@ -1,5 +1,5 @@
 use chrono::{DateTime, Utc};
-use getset::Getters;
+use derive_getters::Getters;
 use serde::Deserialize;
 use strum::{AsRefStr, EnumCount};
 
@@ -69,8 +69,6 @@ pub enum Field {
     #[strum(serialize = "withheld")]
     Withheld,
 }
-
-pub type Users = Vec<User>;
 
 #[derive(Debug, Deserialize, Getters)]
 pub struct User {

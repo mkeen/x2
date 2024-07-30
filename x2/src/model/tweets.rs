@@ -1,6 +1,6 @@
 use chrono::{DateTime, Utc};
 use serde::Deserialize;
-use strum::AsRefStr;
+use strum::{AsRefStr, EnumCount};
 
 use super::{
     entities::{DomainEntityInfo, Entities, Entity},
@@ -109,7 +109,7 @@ pub struct Includes {
     pub polls: Option<Vec<Poll>>,
 }
 
-#[derive(Debug, Deserialize, AsRefStr)]
+#[derive(Debug, Deserialize, AsRefStr, EnumCount)]
 #[serde(rename_all = "snake_case")]
 pub enum Field {
     #[strum(serialize = "attachments")]

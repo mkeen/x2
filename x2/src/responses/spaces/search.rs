@@ -12,7 +12,7 @@ pub struct Response {
     includes: Option<Includes>,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub enum RateLimitContext {
     Application(String),
     AccessToken(RequestCredential),
@@ -24,7 +24,7 @@ impl Response {
     }
 }
 
-impl ResponseTrait for Response {
+impl<'a> ResponseTrait for Response {
     type Response = Response;
 
     fn try_into_from_bytes(bytes: &[u8]) -> Result<Response, XError> {

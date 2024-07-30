@@ -2,7 +2,6 @@ pub mod requests;
 pub mod responses;
 
 mod config;
-mod macros;
 mod model;
 
 extern crate proc_macro;
@@ -13,6 +12,6 @@ extern crate proc_macro;
 
 //     #[test]
 //     fn parse_api_toml() {
-//         println!("{:?}", config::get());
+//         println!("{:?}", config::get() );
 //     }
 // }

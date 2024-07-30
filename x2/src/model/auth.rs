@@ -1,62 +1,64 @@
-use super::error::XError;
-use crate::requests::Request;
+use super::error::XAuthError;
 
-use serde::Serialize;
-use strum::EnumDiscriminants;
+use crate::{
+    requests::{auth::Request as AuthRequest, Request},
+    responses::{self, Response},
+};
 
-pub enum Credential {
-    Unauthorized(AppCredential),
-    Authorized(RequestCredential),
+use strum::EnumIs;
+use urlencoding::encode;
+
+#[derive(EnumIs, Debug)]
+pub enum Context<'a> {
+    Caller(Method<'a>),
+    Request(RequestCredential),
+}
+
+impl<'a> Context<'a> {
+    pub fn is_authorized(&self) -> bool {
+        self.is_request()
+    }
+
+    pub fn authorize(self) -> Result<Self, XAuthError> {
+        AuthRequest::new(&self)
+            .request()
+            .map_err(|e| XAuthError::Upstream(e.to_string()))
+            .map(|c| match c {
+                responses::auth::Response::Bearer(bearer) => {
+                    Context::Request(RequestCredential::Bearer(bearer))
+                }
+            })
+    }
 }
 
 #[derive(Debug)]
-pub enum AppCredential {
-    AppOnly {
-        client_id: String,
-        client_secret: String,
-    },
+pub enum Method<'a> {
+    AppOnly { id: &'a str, secret: &'a str },
 }
 
-#[derive(Debug, Clone, EnumDiscriminants, Serialize)] // todo impl eq
-#[strum_discriminants(name(CredentialType))]
+#[derive(Debug, EnumIs)]
 pub enum RequestCredential {
     Bearer(String),
 }
 
-impl<'a> TryInto<RequestCredential> for Credential {
-    type Error = XError;
-
-    fn try_into(self) -> Result<RequestCredential, XError> {
-        match self {
-            Credential::Unauthorized(app_credential) => {
-                crate::requests::auth::Request::new(&self, None)
-                    .request()
-                    .map(|a| match a {
-                        crate::responses::auth::Response::Bearer(bearer) => {
-                            RequestCredential::Bearer(bearer)
-                        }
-                    })
-            }
-            Credential::Authorized(request_credential) => Ok(request_credential),
-        }
-    }
-}
-
-impl<'a> TryInto<&'a RequestCredential> for &Credential {
-    type Error = XError;
-
-    fn try_into(self) -> Result<&'a RequestCredential, XError> {
-        match self {
-            Credential::Unauthorized(app_credential) => {
-                crate::requests::auth::Request::new(&self, None)
-                    .request()
-                    .map(|a| match a {
-                        crate::responses::auth::Response::Bearer(bearer) => {
-                            &RequestCredential::Bearer(bearer)
-                        }
-                    })
-            }
-            Credential::Authorized(request_credential) => Ok(request_credential),
+// todo: move this to request since its more relevant to requests
+pub trait Authorized<T>: Request<T>
+where
+    T: Response,
+{
+    fn builder_with_auth(
+        auth: &Context,
+        builder: reqwest::blocking::RequestBuilder,
+    ) -> reqwest::blocking::RequestBuilder {
+        match auth {
+            Context::Caller(unauthenticated) => match *unauthenticated {
+                Method::AppOnly { id, secret } => {
+                    builder.basic_auth(encode(id), Some(encode(secret)))
+                }
+            },
+            Context::Request(authenticated) => match authenticated {
+                RequestCredential::Bearer(bearer) => builder.bearer_auth(bearer),
+            },
         }
     }
 }

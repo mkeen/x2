@@ -1,20 +1,16 @@
+pub use derive_getters::Getters;
 use serde::Deserialize;
 
 use crate::model::error::XError;
-use crate::model::users::{Includes, Users};
+use crate::model::users::{Includes, User};
 
 pub use crate::responses::Response as ResponseTrait;
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Getters)]
 pub struct Response {
-    data: Option<Users>,
+    #[getter(rename = "users")]
+    data: Vec<User>,
     includes: Option<Includes>,
-}
-
-impl<'a> Response {
-    pub fn users(&self) -> &Option<Users> {
-        &self.data
-    }
 }
 
 impl ResponseTrait for Response {
