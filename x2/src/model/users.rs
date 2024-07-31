@@ -1,9 +1,11 @@
-use chrono::{DateTime, Utc};
-use derive_getters::Getters;
-use serde::Deserialize;
-use strum::{AsRefStr, EnumCount};
+use super::{
+    entities::Entities,
+    prelude::{AsRefStr, Deserialize, EnumCount, Getters},
+    tweets::Tweet,
+    withheld::Withheld,
+};
 
-use super::{entities::Entities, tweets::Tweet, withheld::Withheld};
+use chrono::{DateTime, Utc};
 
 #[derive(Debug, AsRefStr, Deserialize)]
 #[serde(rename_all = "snake_case")]

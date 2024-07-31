@@ -1,12 +1,8 @@
-use serde::Deserialize;
-use strum::{AsRefStr, EnumCount};
+use super::prelude::*;
 
 use crate::{
-    model::{
-        auth::Context, error::XError, spaces::*, topics::Field as TopicField,
-        users::Field as UserField,
-    },
-    responses::spaces::search::*,
+    model::{topics::Field as TopicField, users::Field as UserField},
+    responses::spaces::search::Response as SearchResponse,
 };
 
 use super::Authorized;
@@ -47,11 +43,7 @@ impl<'a> Default for Fields<'a> {
 }
 
 pub struct Request {
-    builder: super::RequestBuilder,
-    expansions: String,
-    space_fields: String,
-    user_fields: String,
-    topic_fields: String,
+    builder: RequestBuilder,
 }
 
 impl<'a> Request {
@@ -65,10 +57,10 @@ impl<'a> Request {
         let fields = fields.unwrap_or_default();
         let expansions = expansions.unwrap_or_default();
 
-        let expansions = super::collect_csv::<Expansion, { Expansion::COUNT }>(expansions);
-        let space_fields = super::collect_csv::<Field, { Field::COUNT }>(fields.space);
-        let user_fields = super::collect_csv::<UserField, { UserField::COUNT }>(fields.user);
-        let topic_fields = super::collect_csv::<TopicField, { TopicField::COUNT }>(fields.topic);
+        let expansions = collect_csv::<Expansion, { Expansion::COUNT }>(expansions);
+        let space_fields = collect_csv::<Field, { Field::COUNT }>(fields.space);
+        let user_fields = collect_csv::<UserField, { UserField::COUNT }>(fields.user);
+        let topic_fields = collect_csv::<TopicField, { TopicField::COUNT }>(fields.topic);
 
         Self {
             builder: Self::builder_with_auth(
@@ -84,23 +76,19 @@ impl<'a> Request {
                         ("topic.fields", &topic_fields),
                     ]),
             ),
-            expansions,
-            space_fields,
-            user_fields,
-            topic_fields,
         }
     }
 }
 
-impl Authorized<Response> for Request {}
+impl Authorized<SearchResponse> for Request {}
 
-impl<'a> super::Request<Response> for Request {
-    fn request(self) -> Result<Response, XError> {
+impl<'a> super::Request<SearchResponse> for Request {
+    fn request(self) -> Result<SearchResponse, XError> {
         self.builder
             .send()
             .map_err(|e| XError::Socket(e.to_string()))
             .map(|response| match response.status().is_success() {
-                true => Response::try_into_from_bytes(
+                true => SearchResponse::try_into_from_bytes(
                     &response.bytes().map_err(|e| XError::Reqwest(e))?,
                 ),
 

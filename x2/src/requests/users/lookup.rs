@@ -1,11 +1,6 @@
-use serde::Deserialize;
-use strum::{AsRefStr, EnumCount};
+use super::prelude::*;
 
-use crate::{
-    model::{auth::*, error::XError, tweets::Field as TweetField, users::Field},
-    requests::RequestBuilder,
-    responses::users::lookup::*,
-};
+use crate::responses::users::lookup::Response as UserLookupResponse;
 
 #[derive(AsRefStr, Deserialize, EnumCount)]
 #[serde(rename_all = "snake_case")]
@@ -33,10 +28,6 @@ impl<'a> Default for Fields<'a> {
 
 pub struct Request {
     builder: RequestBuilder,
-    usernames: String,
-    expansions: String,
-    user_fields: String,
-    tweet_fields: String,
 }
 
 impl<'a> Request {
@@ -47,43 +38,35 @@ impl<'a> Request {
         fields: Option<Fields>,
     ) -> Self {
         let fields = fields.unwrap_or_default();
-        let expansions = expansions.unwrap_or(&[]);
-
-        let usernames = usernames.join(",");
-        let expansions = super::collect_csv::<Expansion, { Expansion::COUNT }>(expansions);
-        let user_fields = super::collect_csv::<Field, { Field::COUNT }>(fields.user);
-        let tweet_fields = super::collect_csv::<TweetField, { TweetField::COUNT }>(fields.tweets);
+        let expansions = collect_csv::<Expansion, { Expansion::COUNT }>(expansions.unwrap_or(&[]));
+        let user_fields = collect_csv::<Field, { Field::COUNT }>(fields.user);
+        let tweet_fields = collect_csv::<TweetField, { TweetField::COUNT }>(fields.tweets);
 
         Self {
             builder: Self::builder_with_auth(
                 auth,
-                super::super::client()
+                client()
                     .get(crate::config::Endpoint::UserLookup.url())
                     .query(&[
-                        ("usernames", &usernames),
-                        ("expansions", &expansions),
-                        ("user.fields", &user_fields),
-                        ("tweet.fields", &tweet_fields),
+                        ("usernames", usernames.join(",")),
+                        ("expansions", expansions),
+                        ("user.fields", user_fields),
+                        ("tweet.fields", tweet_fields),
                     ]),
             ),
-
-            expansions,
-            user_fields,
-            tweet_fields,
-            usernames,
         }
     }
 }
 
-impl Authorized<Response> for Request {}
+impl Authorized<UserLookupResponse> for Request {}
 
-impl<'a> super::Request<Response> for Request {
-    fn request(self) -> Result<Response, XError> {
+impl<'a> super::Request<UserLookupResponse> for Request {
+    fn request(self) -> Result<UserLookupResponse, XError> {
         self.builder
             .send()
             .map_err(|e| XError::Socket(e.to_string()))
             .map(|response| match response.status().is_success() {
-                true => Response::try_into_from_bytes(
+                true => UserLookupResponse::try_into_from_bytes(
                     &response.bytes().map_err(|e| XError::Reqwest(e))?,
                 ),
 

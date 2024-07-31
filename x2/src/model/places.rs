@@ -1,5 +1,6 @@
+use super::prelude::Deserialize;
+
 use geojson::GeoJson;
-use serde::Deserialize;
 
 #[derive(Debug, Deserialize)]
 pub struct Place {

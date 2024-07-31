@@ -1,22 +1,25 @@
+pub(crate) mod prelude {
+    pub use super::super::prelude::*;
+    pub use crate::config::Endpoint;
+    pub use crate::model::auth::{Authorized, Context};
+    pub use crate::responses::Response;
+}
+
+use prelude::*;
+
 use std::sync::OnceLock;
 
 use arrayvec::ArrayVec;
-pub use reqwest;
-
-use crate::model::{
-    auth::Authorized,
-    error::{XAuthError, XError},
-};
 
 pub static APP_USER_AGENT: &str = concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION"));
 
 pub mod auth;
-//pub mod rate_limit;
+//pub mod limits;
 pub mod spaces;
 //pub mod usage_tweets;
 pub mod users;
 
-type RequestBuilder = reqwest::blocking::RequestBuilder;
+pub(crate) type RequestBuilder = reqwest::blocking::RequestBuilder;
 
 pub trait Request<T>
 where
@@ -36,7 +39,7 @@ static BASE_CLIENT: OnceLock<reqwest::blocking::Client> = OnceLock::new();
 // todo: rename to make it clear this returns a csv
 pub fn collect_csv<T, const N: usize>(list: &[T]) -> String
 where
-    T: AsRef<str>,
+    T: AsRef<str> + EnumCount,
 {
     match list.is_empty() {
         true => "".to_string(),

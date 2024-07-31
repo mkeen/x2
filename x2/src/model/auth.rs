@@ -1,4 +1,4 @@
-use super::error::XAuthError;
+use super::prelude::*;
 
 use crate::{
     requests::{auth::Request as AuthRequest, Request},

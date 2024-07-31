@@ -1,13 +1,8 @@
 use std::collections::HashMap;
 
-use crate::{
-    config::Endpoint,
-    model::{
-        auth::{self},
-        error::XError,
-    },
-    responses::auth::*,
-};
+use super::prelude::*;
+
+pub use crate::responses::auth::Response as AuthResponse;
 
 use super::Authorized;
 
@@ -18,7 +13,7 @@ pub struct Request {
 }
 
 impl<'a> Request {
-    pub fn new(auth: &'a auth::Context) -> Self {
+    pub fn new(auth: &'a Context) -> Self {
         Self {
             builder: Self::builder_with_auth(
                 auth,
@@ -30,15 +25,15 @@ impl<'a> Request {
     }
 }
 
-impl Authorized<Response> for Request {}
+impl Authorized<AuthResponse> for Request {}
 
-impl<'a> super::Request<Response> for Request {
-    fn request(self) -> Result<Response, XError> {
+impl<'a> super::Request<AuthResponse> for Request {
+    fn request(self) -> Result<AuthResponse, XError> {
         self.builder
             .send()
             .map_err(|e| XError::Socket(e.to_string()))
             .map(|response| match response.status().is_success() {
-                true => Response::try_into_from_bytes(
+                true => AuthResponse::try_into_from_bytes(
                     &response.bytes().map_err(|e| XError::Reqwest(e))?,
                 ),
 
@@ -52,9 +47,9 @@ impl<'a> super::Request<Response> for Request {
 
 #[cfg(test)]
 mod tests {
-    use crate::{requests::Request as RequestTrait, responses};
+    use crate::{model::auth::Method, requests::Request};
 
-    use super::*;
+    use super::{Request as AuthRequest, *};
 
     #[test]
     // todo: this is a temporary test. can make integration tests tho, just need to read keys from ENV, etc
@@ -62,8 +57,7 @@ mod tests {
         let id = "GJe6IFjFNwveQzBhJmaMIZzW5";
         let secret = "f9kmkg3eQkxNB7thibc5lhhgavCq4eQmMrTdeO9aw4rIz4Hofb";
 
-        let response =
-            Request::new(&auth::Context::Caller(auth::Method::AppOnly { id, secret })).request();
+        let response = AuthRequest::new(&Context::Caller(Method::AppOnly { id, secret })).request();
 
         assert!(response.is_ok());
         assert!(response.unwrap().is_bearer());

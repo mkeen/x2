@@ -1,5 +1,4 @@
-use serde::Deserialize;
-use strum::AsRefStr;
+use super::prelude::{AsRefStr, Deserialize};
 
 #[derive(Debug, AsRefStr, Deserialize)]
 pub enum Scope {

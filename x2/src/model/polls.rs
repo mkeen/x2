@@ -1,5 +1,6 @@
+use super::prelude::Deserialize;
+
 use chrono::{DateTime, Utc};
-use serde::Deserialize;
 
 #[derive(Debug, Deserialize)]
 pub struct PollOption {

@@ -1,11 +1,7 @@
+use super::prelude::*;
+
+use serde::{de::Visitor, Deserializer};
 use std::fmt;
-
-use serde::{de::Visitor, Deserialize, Deserializer};
-use strum::EnumIs;
-
-use crate::model::error::XError;
-
-pub use super::{Response as ResponseTrait, *};
 
 #[derive(Deserialize, Debug, PartialEq, Eq, EnumIs)]
 #[serde(tag = "token_type", rename_all = "snake_case")]
@@ -46,7 +42,7 @@ where
     deserializer.deserialize_map(StringVisitor)
 }
 
-impl ResponseTrait for Response {
+impl super::Response for Response {
     type Response = Response;
 
     fn try_into_from_bytes(bytes: &[u8]) -> Result<Response, XError> {

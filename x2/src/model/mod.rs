@@ -1,3 +1,7 @@
+pub(crate) mod prelude {
+    pub use super::super::prelude::*;
+}
+
 pub mod auth;
 pub mod entities;
 pub mod error;
@@ -11,20 +15,6 @@ pub mod tweets;
 pub mod users;
 pub mod withheld;
 
-pub trait Inclusive<'a, T> {
-    fn includes(&'a mut self, include: &'a T) -> &'a impl Inclusive<T>;
-}
-
-// pub enum ParamValue {
-//     Single(String),
-//     Multi(Vec<String>),
-// }
-
-// impl ParamValue {
-//     fn csv(&self) -> &str {
-//         match self {
-//             Self::Single(v) => v,
-//             Self::Multi(v) => &v.join(","),
-//         }
-//     }
+// pub trait Inclusive<'a, T> {
+//     fn includes(&'a mut self, include: &'a T) -> &'a impl Inclusive<T>;
 // }

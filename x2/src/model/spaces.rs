@@ -1,10 +1,7 @@
-use std::default;
-
-use chrono::{self, DateTime, Utc};
-use serde::Deserialize;
-use strum::{AsRefStr, EnumCount};
+use super::prelude::{AsRefStr, Deserialize, EnumCount};
 
 use super::users::User;
+use chrono::{self, DateTime, Utc};
 
 #[derive(Debug, Deserialize, AsRefStr, Default)]
 #[serde(rename_all = "snake_case")]

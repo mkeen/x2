@@ -1,21 +1,9 @@
-use serde::Deserialize;
-
-use crate::model::auth::RequestCredential;
-use crate::model::error::XError;
-use crate::model::spaces::{Includes, Space};
-
-pub use super::Response as ResponseTrait;
+use super::prelude::*;
 
 #[derive(Debug, Deserialize)]
 pub struct Response {
     data: Vec<Space>,
     includes: Option<Includes>,
-}
-
-#[derive(Debug)]
-pub enum RateLimitContext {
-    Application(String),
-    AccessToken(RequestCredential),
 }
 
 impl Response {
@@ -24,7 +12,7 @@ impl Response {
     }
 }
 
-impl<'a> ResponseTrait for Response {
+impl<'a> super::Response for Response {
     type Response = Response;
 
     fn try_into_from_bytes(bytes: &[u8]) -> Result<Response, XError> {

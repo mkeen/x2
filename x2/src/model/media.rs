@@ -1,4 +1,4 @@
-use serde::Deserialize;
+use super::prelude::Deserialize;
 
 #[derive(Debug, Deserialize)]
 pub struct Metrics {

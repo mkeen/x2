@@ -1,8 +1,4 @@
-pub use derive_getters::Getters;
-use serde::Deserialize;
-
-use crate::model::error::XError;
-use crate::model::users::{Includes, User};
+use super::prelude::*;
 
 pub use crate::responses::Response as ResponseTrait;
 
