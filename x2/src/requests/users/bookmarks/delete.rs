@@ -1,5 +1,5 @@
 use serde::Deserialize;
-use strum::{AsRefStr, EnumCount};
+use strum::{EnumCount, IntoStaticStr};
 
 use crate::{
     model::{auth::*, error::XError, tweets::Field as TweetField, users::Field},
@@ -7,7 +7,7 @@ use crate::{
     responses::users::lookup::*,
 };
 
-#[derive(AsRefStr, Deserialize, EnumCount)]
+#[derive(IntoStaticStr, Deserialize, EnumCount)]
 #[serde(rename_all = "snake_case")]
 pub enum Expansion {
     #[strum(serialize = "pinned_tweet_id")]

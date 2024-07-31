@@ -1,8 +1,10 @@
+use std::usize;
+
 use super::prelude::*;
 
-use crate::responses::users::lookup::Response as UserLookupResponse;
+use crate::{model::spaces::Field, responses::users::lookup::Response as UserLookupResponse};
 
-#[derive(AsRefStr, Deserialize, EnumCount)]
+#[derive(IntoStaticStr, Deserialize, EnumCount, Clone)]
 #[serde(rename_all = "snake_case")]
 pub enum Expansion {
     #[strum(serialize = "pinned_tweet_id")]
@@ -38,9 +40,9 @@ impl<'a> Request {
         fields: Option<Fields>,
     ) -> Self {
         let fields = fields.unwrap_or_default();
-        let expansions = collect_csv::<Expansion, { Expansion::COUNT }>(expansions.unwrap_or(&[]));
-        let user_fields = collect_csv::<Field, { Field::COUNT }>(fields.user);
-        let tweet_fields = collect_csv::<TweetField, { TweetField::COUNT }>(fields.tweets);
+        let expansions = csv::<{ Expansion::COUNT }, Expansion>(expansions.unwrap_or(&[]));
+        let fields_user = csv::<{ Field::COUNT }, Field>(fields.user);
+        let fields_tweet = csv::<{ TweetField::COUNT }, TweetField>(fields.tweets);
 
         Self {
             builder: Self::builder_with_auth(
@@ -50,8 +52,8 @@ impl<'a> Request {
                     .query(&[
                         ("usernames", usernames.join(",")),
                         ("expansions", expansions),
-                        ("user.fields", user_fields),
-                        ("tweet.fields", tweet_fields),
+                        ("user.fields", fields_user),
+                        ("tweet.fields", fields_tweet),
                     ]),
             ),
         }

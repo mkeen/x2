@@ -1,13 +1,13 @@
 use super::{
     entities::Entities,
-    prelude::{AsRefStr, Deserialize, EnumCount, Getters},
+    prelude::{Deserialize, EnumCount, Getters, IntoStaticStr},
     tweets::Tweet,
     withheld::Withheld,
 };
 
 use chrono::{DateTime, Utc};
 
-#[derive(Debug, AsRefStr, Deserialize)]
+#[derive(Debug, IntoStaticStr, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum VerifiedType {
     #[strum(serialize = "blue")]
@@ -28,14 +28,14 @@ pub struct PublicMetrics {
     pub listed_count: Option<String>,
 }
 
-#[derive(Debug, Deserialize, AsRefStr)]
+#[derive(Debug, Deserialize, IntoStaticStr)]
 #[serde(rename_all = "snake_case")]
 pub enum Includes {
     #[strum(serialize = "tweets")]
     Tweets(Vec<Tweet>),
 }
 
-#[derive(Deserialize, AsRefStr, EnumCount)]
+#[derive(Deserialize, IntoStaticStr, EnumCount, Clone)]
 #[serde(rename_all = "snake_case")]
 pub enum Field {
     #[strum(serialize = "created_at")]

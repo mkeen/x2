@@ -1,6 +1,6 @@
-use super::prelude::{AsRefStr, Deserialize};
+use super::prelude::{Deserialize, IntoStaticStr};
 
-#[derive(Debug, AsRefStr, Deserialize)]
+#[derive(Debug, IntoStaticStr, Deserialize)]
 pub enum Scope {
     #[strum(serialize = "tweet")]
     Tweet,

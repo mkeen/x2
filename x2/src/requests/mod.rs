@@ -6,9 +6,10 @@ pub(crate) mod prelude {
 }
 
 use prelude::*;
+use rayon::prelude::*;
 
 use arrayvec::ArrayVec;
-use std::{fmt::Display, sync::OnceLock};
+use std::{collections::HashSet, sync::OnceLock, usize};
 
 pub static APP_USER_AGENT: &str = concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION"));
 static BASE_CLIENT: OnceLock<reqwest::blocking::Client> = OnceLock::new();
@@ -25,19 +26,24 @@ pub trait Request<T: Response> {
     fn request(self) -> Result<T, XError>;
 }
 
-// todo: rename to make it clear this returns a csv
-pub fn collect_csv<T, const N: usize>(list: &[T]) -> String
+// pub fn csv_par<const U: usize, T>(lists: [&[T]; U]) {
+//     rayon::scope(|scope| {
+//         for l in lists {
+//             // rayon::spawn(|s| {
+
+//             // })
+//         }
+//     });
+// }
+
+pub fn csv<const U: usize, T>(list: &[T]) -> String
 where
-    T: AsRef<str> + EnumCount,
+    T: Clone + Into<&'static str>,
 {
-    match list.is_empty() {
-        true => "".to_string(),
-        false => list
-            .iter()
-            .map(|e| e.as_ref())
-            .collect::<ArrayVec<&str, N>>() // todo: benchmark against Vec
-            .join(","),
-    }
+    list.iter()
+        .map(|t| t.clone().into()) // todo: ugh.. clone.. not much that can be done tho
+        .collect::<ArrayVec<&str, U>>()
+        .join(",")
 }
 
 pub fn client() -> &'static reqwest::blocking::Client {
@@ -52,4 +58,26 @@ pub fn client() -> &'static reqwest::blocking::Client {
             .build()
             .expect("failed to initialize the http client")
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::model::users::Field as UserField;
+    use strum::EnumCount;
+
+    use super::csv;
+
+    #[test]
+    fn csv_length() {
+        let test_input = [
+            UserField::CreatedAt,
+            UserField::Description,
+            UserField::Entities,
+            UserField::Id,
+        ];
+
+        let c = csv::<{ UserField::COUNT }, UserField>(&test_input);
+
+        assert_eq!(c.split(",").collect::<Vec<&str>>().len(), test_input.len());
+    }
 }

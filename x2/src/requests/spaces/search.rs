@@ -5,9 +5,11 @@ use crate::{
     responses::spaces::search::Response as SearchResponse,
 };
 
+use rayon::prelude;
+
 use super::Authorized;
 
-#[derive(AsRefStr, Deserialize, EnumCount)]
+#[derive(IntoStaticStr, Deserialize, EnumCount, Clone)]
 #[serde(rename_all = "snake_case")]
 pub enum Expansion {
     #[strum(serialize = "invited_user_ids")]
@@ -57,10 +59,10 @@ impl<'a> Request {
         let fields = fields.unwrap_or_default();
         let expansions = expansions.unwrap_or_default();
 
-        let expansions = collect_csv::<Expansion, { Expansion::COUNT }>(expansions);
-        let space_fields = collect_csv::<Field, { Field::COUNT }>(fields.space);
-        let user_fields = collect_csv::<UserField, { UserField::COUNT }>(fields.user);
-        let topic_fields = collect_csv::<TopicField, { TopicField::COUNT }>(fields.topic);
+        let expansions = csv::<{ Expansion::COUNT }, Expansion>(expansions);
+        let fields_space = csv::<{ Field::COUNT }, Field>(fields.space);
+        let fields_user = csv::<{ UserField::COUNT }, UserField>(fields.user);
+        let fields_topic = csv::<{ TopicField::COUNT }, TopicField>(fields.topic);
 
         Self {
             builder: Self::builder_with_auth(
@@ -69,11 +71,11 @@ impl<'a> Request {
                     .get(crate::config::Endpoint::SpacesSearch.url())
                     .query(&[
                         ("query", query),
-                        ("state", state.as_ref()),
+                        ("state", state.into()),
                         ("expansions", &expansions),
-                        ("space.fields", &space_fields),
-                        ("user.fields", &user_fields),
-                        ("topic.fields", &topic_fields),
+                        ("space.fields", &fields_space),
+                        ("user.fields", &fields_user),
+                        ("topic.fields", &fields_topic),
                     ]),
             ),
         }

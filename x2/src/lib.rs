@@ -4,14 +4,14 @@ pub(crate) mod _prelude {
     pub use crate::model::error::*;
     pub use derive_getters::Getters;
     pub use serde::Deserialize;
-    pub use strum::{AsRefStr, EnumCount, EnumIs};
+    pub use strum::{EnumCount, EnumIs, IntoStaticStr};
 }
 
 pub mod prelude {
     pub use crate::model::error::*;
     pub use derive_getters::Getters;
     pub use serde::Deserialize;
-    pub use strum::{AsRefStr, EnumCount, EnumIs};
+    pub use strum::{EnumCount, EnumIs, IntoStaticStr};
 }
 
 pub mod requests;

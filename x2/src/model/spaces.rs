@@ -1,9 +1,9 @@
-use super::prelude::{AsRefStr, Deserialize, EnumCount};
+use super::prelude::{Deserialize, EnumCount, IntoStaticStr};
 
 use super::users::User;
 use chrono::{self, DateTime, Utc};
 
-#[derive(Debug, Deserialize, AsRefStr, Default)]
+#[derive(Debug, Deserialize, IntoStaticStr, Default, Clone)]
 #[serde(rename_all = "snake_case")]
 pub enum State {
     #[strum(serialize = "live")]
@@ -41,7 +41,7 @@ pub struct Includes {
 //     TopicIds,
 // }
 
-#[derive(Debug, Deserialize, AsRefStr, PartialEq, EnumCount)]
+#[derive(Debug, Deserialize, IntoStaticStr, PartialEq, EnumCount, Clone)]
 #[serde(rename_all = "snake_case")]
 pub enum Field {
     #[strum(serialize = "host_ids")]

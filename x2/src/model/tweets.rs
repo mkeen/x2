@@ -1,4 +1,4 @@
-use super::prelude::{AsRefStr, Deserialize, EnumCount};
+use super::prelude::{Deserialize, EnumCount, IntoStaticStr};
 
 use chrono::{DateTime, Utc};
 
@@ -43,7 +43,7 @@ pub struct Geo {
     pub coordinates: Option<Coordinates>,
 }
 
-#[derive(Debug, Deserialize, AsRefStr)]
+#[derive(Debug, Deserialize, IntoStaticStr)]
 #[serde(rename_all = "snake_case")]
 pub enum ContextAnnotations {
     #[strum(serialize = "domain")]
@@ -89,7 +89,7 @@ pub struct PromotedMetrics {
     pub like_count: Option<u64>,
 }
 
-#[derive(Debug, Deserialize, AsRefStr)]
+#[derive(Debug, Deserialize, IntoStaticStr)]
 #[serde(rename_all = "snake_case")]
 pub enum ReplySettings {
     #[strum(serialize = "everyone")]
@@ -109,7 +109,7 @@ pub struct Includes {
     pub polls: Option<Vec<Poll>>,
 }
 
-#[derive(Debug, Deserialize, AsRefStr, EnumCount)]
+#[derive(Debug, Deserialize, IntoStaticStr, EnumCount, Clone)]
 #[serde(rename_all = "snake_case")]
 pub enum Field {
     #[strum(serialize = "attachments")]

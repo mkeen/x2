@@ -1,5 +1,5 @@
 pub(crate) mod prelude {
-    pub(crate) use super::super::{client, collect_csv, prelude::*, RequestBuilder};
+    pub(crate) use super::super::{client, csv, prelude::*, RequestBuilder};
     pub(crate) use crate::model::tweets::Field as TweetField;
     pub(crate) use crate::model::users::Field;
 }

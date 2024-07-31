@@ -1,11 +1,15 @@
 use criterion::{criterion_group, criterion_main, Criterion};
 use x2::prelude::*;
-use x2::{model::users::Field, requests::collect_csv};
+use x2::{model::users::Field, requests::csv};
 
-pub fn criterion_benchmark(c: &mut Criterion) {
+pub fn single_set_csv(c: &mut Criterion) {
     c.bench_function("main bench", |b| {
         b.iter(|| {
-            collect_csv::<Field, { Field::COUNT }>(&[
+            csv::<{ Field::COUNT }, Field>(&[
+                Field::Description,
+                Field::Location,
+                Field::ProfileImageUrl,
+                Field::MostRecentTweetId,
                 Field::Description,
                 Field::Location,
                 Field::ProfileImageUrl,
@@ -15,5 +19,66 @@ pub fn criterion_benchmark(c: &mut Criterion) {
     });
 }
 
-criterion_group!(benches, criterion_benchmark);
+pub fn multi_set_csv(c: &mut Criterion) {
+    c.bench_function("main bench", |b| {
+        b.iter(|| {
+            csv::<{ Field::COUNT }, Field>(&[
+                Field::Description,
+                Field::Location,
+                Field::ProfileImageUrl,
+                Field::MostRecentTweetId,
+                Field::Description,
+                Field::Location,
+                Field::ProfileImageUrl,
+                Field::MostRecentTweetId,
+            ]);
+
+            csv::<{ Field::COUNT }, Field>(&[
+                Field::Description,
+                Field::Location,
+                Field::ProfileImageUrl,
+                Field::MostRecentTweetId,
+                Field::Description,
+                Field::Location,
+                Field::ProfileImageUrl,
+                Field::MostRecentTweetId,
+            ]);
+
+            csv::<{ Field::COUNT }, Field>(&[
+                Field::Description,
+                Field::Location,
+                Field::ProfileImageUrl,
+                Field::MostRecentTweetId,
+                Field::Description,
+                Field::Location,
+                Field::ProfileImageUrl,
+                Field::MostRecentTweetId,
+            ]);
+
+            csv::<{ Field::COUNT }, Field>(&[
+                Field::Description,
+                Field::Location,
+                Field::ProfileImageUrl,
+                Field::MostRecentTweetId,
+                Field::Description,
+                Field::Location,
+                Field::ProfileImageUrl,
+                Field::MostRecentTweetId,
+            ]);
+
+            csv::<{ Field::COUNT }, Field>(&[
+                Field::Description,
+                Field::Location,
+                Field::ProfileImageUrl,
+                Field::MostRecentTweetId,
+                Field::Description,
+                Field::Location,
+                Field::ProfileImageUrl,
+                Field::MostRecentTweetId,
+            ]);
+        })
+    });
+}
+
+criterion_group!(benches, single_set_csv, multi_set_csv);
 criterion_main!(benches);

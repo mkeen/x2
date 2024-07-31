@@ -1,6 +1,6 @@
-use super::prelude::{AsRefStr, Deserialize, EnumCount};
+use super::prelude::{Deserialize, EnumCount, IntoStaticStr};
 
-#[derive(Deserialize, AsRefStr, EnumCount)]
+#[derive(Deserialize, IntoStaticStr, EnumCount, Clone)]
 #[serde(rename_all = "snake_case")]
 pub enum Field {
     #[strum(serialize = "id")]
