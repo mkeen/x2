@@ -2,14 +2,6 @@ use reqwest::Url;
 use serde::Deserialize;
 use std::sync::OnceLock;
 use strum::EnumProperty;
-use toml;
-
-const RAW: &str = include_str!("./../api.toml");
-static CONFIG: OnceLock<EndpointsConfig> = OnceLock::new();
-
-fn get() -> &'static EndpointsConfig {
-    CONFIG.get_or_init(|| toml::from_str(RAW).expect("endpoint config error"))
-}
 
 #[derive(Debug, Deserialize)]
 struct EndpointsConfig {
@@ -46,11 +38,9 @@ pub enum Endpoint {
 
 impl<'a> Endpoint {
     pub fn url(self) -> Url {
-        let config = get();
-
         Url::parse(&format!(
             "https://{}/{}",
-            config.constants.base_url,
+            "api.twitter.com",
             self.get_str("Path").unwrap()
         ))
         .expect("lib error, could not find url for request type")
