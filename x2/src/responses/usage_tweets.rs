@@ -17,8 +17,8 @@ pub struct Data {
 #[derive(Debug, Deserialize)]
 #[serde(tag = "data")]
 pub struct Response {
-    data: Data,
-    includes: Option<Includes>,
+    pub data: Data,
+    pub includes: Option<Includes>,
 }
 
 #[derive(Clone, Debug, Deserialize)]

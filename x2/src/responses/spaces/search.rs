@@ -1,6 +1,6 @@
 use super::prelude::*;
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Getters)]
 pub struct Response {
     data: Vec<Space>,
     includes: Option<Includes>,

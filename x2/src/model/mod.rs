@@ -1,5 +1,5 @@
 pub(crate) mod prelude {
-    pub use super::super::prelude::*;
+    pub use super::super::_prelude::*;
 }
 
 pub mod auth;

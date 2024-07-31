@@ -85,9 +85,9 @@ pub struct MentionEntityInfoContainer {
 
 #[derive(Debug, Deserialize)]
 pub struct Entities {
-    url: Option<UrlEntityInfoContainer>,
-    hashtags: Option<Vec<HashtagEntityInfoContainer>>,
-    mentions: Option<Vec<MentionEntityInfoContainer>>,
-    cashtags: Option<Vec<CashtagEntityInfoContainer>>,
-    annotations: Option<Vec<Annotation>>,
+    pub url: Option<UrlEntityInfoContainer>,
+    pub hashtags: Option<Vec<HashtagEntityInfoContainer>>,
+    pub mentions: Option<Vec<MentionEntityInfoContainer>>,
+    pub cashtags: Option<Vec<CashtagEntityInfoContainer>>,
+    pub annotations: Option<Vec<Annotation>>,
 }

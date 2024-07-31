@@ -1,5 +1,5 @@
 pub(crate) mod prelude {
-    pub use super::super::prelude::*;
+    pub use super::super::_prelude::*;
     pub use crate::config::Endpoint;
     pub use crate::model::auth::{Authorized, Context};
     pub use crate::responses::Response;
@@ -7,11 +7,11 @@ pub(crate) mod prelude {
 
 use prelude::*;
 
-use std::sync::OnceLock;
-
 use arrayvec::ArrayVec;
+use std::{fmt::Display, sync::OnceLock};
 
 pub static APP_USER_AGENT: &str = concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION"));
+static BASE_CLIENT: OnceLock<reqwest::blocking::Client> = OnceLock::new();
 
 pub mod auth;
 //pub mod limits;
@@ -19,22 +19,11 @@ pub mod spaces;
 //pub mod usage_tweets;
 pub mod users;
 
-pub(crate) type RequestBuilder = reqwest::blocking::RequestBuilder;
+pub type RequestBuilder = reqwest::blocking::RequestBuilder;
 
-pub trait Request<T>
-where
-    T: crate::responses::Response,
-{
+pub trait Request<T: Response> {
     fn request(self) -> Result<T, XError>;
 }
-
-pub trait AuthorizedRequest<T>: Request<T> + Authorized<T>
-where
-    T: crate::responses::Response,
-{
-}
-
-static BASE_CLIENT: OnceLock<reqwest::blocking::Client> = OnceLock::new();
 
 // todo: rename to make it clear this returns a csv
 pub fn collect_csv<T, const N: usize>(list: &[T]) -> String
@@ -46,7 +35,7 @@ where
         false => list
             .iter()
             .map(|e| e.as_ref())
-            .collect::<ArrayVec<&str, N>>()
+            .collect::<ArrayVec<&str, N>>() // todo: benchmark against Vec
             .join(","),
     }
 }

@@ -1,5 +1,5 @@
 pub mod prelude {
-    pub use super::super::prelude::*;
+    pub use super::super::_prelude::*;
 }
 
 use prelude::*;

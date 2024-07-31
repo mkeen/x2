@@ -1,22 +1,21 @@
 [package]
-name = "x2-derive"
+name = "x2-benchmarks"
 version = "0.1.0"
 edition = "2021"
-description = "X API Macros"
+description = "X API Benchmarks"
 repository = "https://github.com/mkeen/x2"
 homepage = "https://mikekeen.com/x2"
 documentation = "https://docs.rs/x2"
 license = "Apache-2.0"
-readme = "../README"
+readme = "README"
 authors = ["Mike Keen <mwk@mikekeen.com>"]
 
-[lib]
-proc-macro = true
-
 [dependencies]
-proc-macro2 = "1.0.86"
-quote = "^1"
-syn = { version = "^2", features = ["visit"] }
 
 [dev-dependencies]
-x2 = { path = "../x2" }
+criterion = "^0.5"
+x2 = { path = "../x2"}
+
+[[bench]]
+name = "request"
+harness = false

@@ -1,4 +1,13 @@
-pub(crate) mod prelude {
+// todo: possibly converge public and private prelude areas
+
+pub(crate) mod _prelude {
+    pub use crate::model::error::*;
+    pub use derive_getters::Getters;
+    pub use serde::Deserialize;
+    pub use strum::{AsRefStr, EnumCount, EnumIs};
+}
+
+pub mod prelude {
     pub use crate::model::error::*;
     pub use derive_getters::Getters;
     pub use serde::Deserialize;
@@ -9,7 +18,7 @@ pub mod requests;
 pub mod responses;
 
 mod config;
-mod model;
+pub mod model;
 
 extern crate proc_macro;
 

@@ -27,9 +27,9 @@ static DEFAULT_FIELDS_TOPIC: [TopicField; 0] = [];
 static DEFAULT_FIELDS_USER: [UserField; 0] = [];
 
 pub struct Fields<'a> {
-    space: &'a [Field],
-    topic: &'a [TopicField],
-    user: &'a [UserField],
+    pub space: &'a [Field],
+    pub topic: &'a [TopicField],
+    pub user: &'a [UserField],
 }
 
 impl<'a> Default for Fields<'a> {
@@ -47,7 +47,7 @@ pub struct Request {
 }
 
 impl<'a> Request {
-    fn new(
+    pub fn new(
         auth: &'a Context,
         query: &'a str,
         state: State,
