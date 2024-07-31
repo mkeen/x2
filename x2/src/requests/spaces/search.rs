@@ -111,8 +111,8 @@ mod tests {
 
     #[test]
     fn integration_spaces_search_with_defaults() {
-        let id = "GJe6IFjFNwveQzBhJmaMIZzW5";
-        let secret = "f9kmkg3eQkxNB7thibc5lhhgavCq4eQmMrTdeO9aw4rIz4Hofb";
+        let id = "gUJTmN2jcD7zOg2kFcbbS3fSp";
+        let secret = "8tWsU562uAzSFaCP7860rGHd0yldWgDJGwwvlyrugqoGBB8qon";
 
         let context = auth::Context::Caller(auth::Method::AppOnly { id, secret });
 
