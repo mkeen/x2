@@ -66,7 +66,7 @@ impl Request {
             builder: Self::builder_with_auth(
                 auth,
                 super::super::client()
-                    .get(Endpoint::SpacesSearch.url(None))
+                    .get(super::Endpoint::Search.url(None))
                     .query(&[
                         ("query", query),
                         ("state", state.into()),

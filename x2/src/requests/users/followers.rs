@@ -1,7 +1,6 @@
-use bytes::Bytes;
-
 use super::prelude::*;
-use crate::{model::spaces::Field, responses::users::Response};
+
+use crate::responses::users::Response;
 
 #[derive(IntoStaticStr, Deserialize, EnumCount, Clone)]
 #[serde(rename_all = "snake_case")]
@@ -10,8 +9,9 @@ pub enum Expansion {
     PinnedTweetId,
 }
 
-static DEFAULT_FIELDS_USER: [Field; 0] = [];
+static DEFAULT_FIELDS: [Field; 0] = [];
 static DEFAULT_FIELDS_TWEETS: [TweetField; 0] = [];
+static DEFAULT_EXPANSIONS: [Expansion; 0] = [];
 
 pub struct Fields<'a> {
     user: &'a [Field],
@@ -21,7 +21,7 @@ pub struct Fields<'a> {
 impl<'a> Default for Fields<'a> {
     fn default() -> Self {
         Self {
-            user: &DEFAULT_FIELDS_USER,
+            user: &DEFAULT_FIELDS,
             tweets: &DEFAULT_FIELDS_TWEETS,
         }
     }
@@ -31,30 +31,39 @@ pub struct Request {
     builder: Option<RequestBuilder>,
 }
 
-impl Authorized<Response> for Request {}
-
 impl<'a> Request {
     pub fn new(
         auth: &'a Context,
-        usernames: &[&str],
+        id: &str,
         expansions: Option<&[Expansion]>,
         fields: Option<Fields>,
+        max_results: Option<u16>,
+        pagination_token: Option<&str>,
     ) -> Self {
         let fields = fields.unwrap_or_default();
+        let pagination_token = pagination_token.unwrap_or("");
+
+        let expansions = csv(expansions.unwrap_or(&DEFAULT_EXPANSIONS));
+        let max_results = format!("{}", max_results.unwrap_or(DEFAULT_RESULT_LIMIT));
 
         Self {
             builder: Self::builder_with_auth(
                 auth,
-                client().get(super::Endpoint::Lookup.url(None)).query(&[
-                    ("usernames", usernames.join(",")),
-                    ("expansions", csv(expansions.unwrap_or(&[]))),
-                    ("user.fields", csv(fields.user)),
-                    ("tweet.fields", csv(fields.tweets)),
-                ]),
+                client()
+                    .get(super::Endpoint::Followers.url(Some(&[id])))
+                    .query(&[
+                        ("expansions", expansions.as_str()),
+                        ("max_results", max_results.as_str()),
+                        ("user.fields", csv(fields.user).as_str()),
+                        ("tweet.fields", &csv(fields.tweets).as_str()),
+                        ("pagination_token", pagination_token),
+                    ]),
             ),
         }
     }
 }
+
+impl Authorized<Response> for Request {}
 
 impl super::Request<Response> for Request {
     fn builder(&mut self) -> Option<RequestBuilder> {
@@ -64,13 +73,12 @@ impl super::Request<Response> for Request {
 
 #[cfg(test)]
 mod tests {
-    use crate::{
-        model::auth,
-        requests::{users::lookup::*, Request as RequestTrait},
-    };
+    use crate::{model::auth, requests::Request as RequestTrait};
+
+    use super::Request;
 
     #[test]
-    fn integration_users_lookup_with_defaults() {
+    fn integration_users_followers_lookup_with_defaults() {
         let id = "c2HAMlWTX2m3cVgNgA0oqLRqH";
         let secret = "bwWKCB8KHHRnMDAKUa4cmZdp80FZxNsCLo2G1axDRHjb7nkOc2";
 
@@ -79,8 +87,9 @@ mod tests {
         // not testing authentication here, so will just unwrap and assume all is well
         let authorization = context.authorize().unwrap();
 
-        let response =
-            Request::new(&authorization, &["divxspan", "wamalone"], None, None).request();
+        let response = Request::new(&authorization, "123", None, None, None, None).request();
+
+        println!("{:?}", response);
 
         assert!(response.is_ok());
 

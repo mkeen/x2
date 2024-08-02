@@ -1,6 +1,8 @@
-use std::collections::HashMap;
-
 use super::prelude::*;
+
+use super::Endpoint as EndpointTrait;
+
+use std::collections::HashMap;
 
 pub use crate::responses::auth::Response;
 
@@ -30,6 +32,14 @@ impl super::Request<Response> for Request {
         self.builder.take()
     }
 }
+
+#[derive(Debug, EnumProperty)]
+pub enum Endpoint {
+    #[strum(props(Path = "oauth2/token"))]
+    Authentication,
+}
+
+impl super::Endpoint for Endpoint {}
 
 #[cfg(test)]
 mod tests {

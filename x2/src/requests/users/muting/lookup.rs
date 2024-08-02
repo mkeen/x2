@@ -51,13 +51,15 @@ impl<'a> Request {
         Self {
             builder: Self::builder_with_auth(
                 auth,
-                client().get(Endpoint::UserMuting.url(Some(&[id]))).query(&[
-                    ("expansions", expansions.as_str()),
-                    ("max_results", max_results.as_str()),
-                    ("user.fields", csv(fields.user).as_str()),
-                    ("tweet.fields", &csv(fields.tweets).as_str()),
-                    ("pagination_token", pagination_token),
-                ]),
+                client()
+                    .get(super::Endpoint::Lookup.url(Some(&[id])))
+                    .query(&[
+                        ("expansions", expansions.as_str()),
+                        ("max_results", max_results.as_str()),
+                        ("user.fields", csv(fields.user).as_str()),
+                        ("tweet.fields", &csv(fields.tweets).as_str()),
+                        ("pagination_token", pagination_token),
+                    ]),
             ),
         }
     }

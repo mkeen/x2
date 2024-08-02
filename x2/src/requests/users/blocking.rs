@@ -49,13 +49,15 @@ impl<'a> Request {
         Self {
             builder: Self::builder_with_auth(
                 auth,
-                client().get(Endpoint::UserMuting.url(Some(&[id]))).query(&[
-                    ("expansions", expansions.as_str()),
-                    ("max_results", max_results.as_str()),
-                    ("user.fields", csv(fields.user).as_str()),
-                    ("tweet.fields", &csv(fields.tweets).as_str()),
-                    ("pagination_token", pagination_token),
-                ]),
+                client()
+                    .get(super::Endpoint::Blocking.url(Some(&[id])))
+                    .query(&[
+                        ("expansions", expansions.as_str()),
+                        ("max_results", max_results.as_str()),
+                        ("user.fields", csv(fields.user).as_str()),
+                        ("tweet.fields", csv(fields.tweets).as_str()),
+                        ("pagination_token", pagination_token),
+                    ]),
             ),
         }
     }
@@ -76,7 +78,7 @@ mod tests {
     use super::Request;
 
     #[test]
-    fn integration_users_muting_lookup_with_defaults() {
+    fn integration_users_blocking_lookup_with_defaults() {
         let id = "c2HAMlWTX2m3cVgNgA0oqLRqH";
         let secret = "bwWKCB8KHHRnMDAKUa4cmZdp80FZxNsCLo2G1axDRHjb7nkOc2";
 

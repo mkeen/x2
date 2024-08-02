@@ -1,4 +1,4 @@
-use std::io;
+use std::{io, num::ParseIntError};
 use thiserror::Error;
 
 #[derive(Error, Debug)]
@@ -51,4 +51,6 @@ pub enum LibError {
     OutOfBounds,
     #[error("{0} Please file a bug report: https://github.com/mkeen/x2/issues")]
     UrlParsingError(String),
+    #[error("Invalid snowflake specified: {0}")]
+    InvalidSnowflake(ParseIntError),
 }
