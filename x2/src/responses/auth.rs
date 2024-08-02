@@ -42,12 +42,4 @@ where
     deserializer.deserialize_map(StringVisitor)
 }
 
-impl super::Response for Response {
-    type Response = Response;
-
-    fn try_into_from_bytes(bytes: &[u8]) -> Result<Response, XError> {
-        serde_json::from_slice::<Self>(bytes)
-            .map_err(|e| XError::Deserialize(e))
-            .map(|e| e)
-    }
-}
+impl super::Response for Response {}

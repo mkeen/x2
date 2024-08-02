@@ -1,5 +1,5 @@
-pub(crate) mod prelude {
-    pub(crate) use super::super::{csv, prelude::*, RequestBuilder};
+pub mod prelude {
+    pub(crate) use super::super::{prelude::*, RequestBuilder};
     pub(crate) use crate::model::spaces::*;
 }
 

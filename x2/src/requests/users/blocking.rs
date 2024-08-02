@@ -31,8 +31,6 @@ pub struct Request {
     builder: Option<RequestBuilder>,
 }
 
-impl Authorized<Response> for Request {}
-
 impl<'a> Request {
     pub fn new(
         auth: &'a Context,
@@ -62,6 +60,8 @@ impl<'a> Request {
         }
     }
 }
+
+impl Authorized<Response> for Request {}
 
 impl super::Request<Response> for Request {
     fn builder(&mut self) -> Option<RequestBuilder> {

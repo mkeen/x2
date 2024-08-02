@@ -19,6 +19,8 @@ pub enum XError {
     IO(io::Error),
     #[error("Deserialization Error: {0}")]
     Deserialize(serde_json::Error),
+    #[error("Response bytes read Error: {0}")]
+    ReadResponseBytes(reqwest::Error),
     #[error("Reqwest Error: {0}")]
     Reqwest(reqwest::Error),
     #[error("Invalid UTF8")]
@@ -29,6 +31,8 @@ pub enum XError {
     HttpGeneric(reqwest::StatusCode, String),
     #[error("Already Authorized")]
     AlreadyAuthorized,
+    #[error("Already Consumed")]
+    AlreadyConsumed,
 }
 
 #[derive(Error, Debug)]
@@ -39,4 +43,12 @@ pub enum XAuthError {
     Upstream(String),
     #[error("Please file a bug report: https://github.com/mkeen/x2/issues")]
     Unknown,
+}
+
+#[derive(Error, Debug)]
+pub enum LibError {
+    #[error("Please file a bug report: https://github.com/mkeen/x2/issues")]
+    OutOfBounds,
+    #[error("{0} Please file a bug report: https://github.com/mkeen/x2/issues")]
+    UrlParsingError(String),
 }

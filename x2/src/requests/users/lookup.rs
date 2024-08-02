@@ -1,8 +1,7 @@
-use std::usize;
+use bytes::Bytes;
 
 use super::prelude::*;
-
-use crate::{model::spaces::Field, responses::users::lookup::Response as UserLookupResponse};
+use crate::{model::spaces::Field, responses::users::Response};
 
 #[derive(IntoStaticStr, Deserialize, EnumCount, Clone)]
 #[serde(rename_all = "snake_case")]
@@ -29,8 +28,10 @@ impl<'a> Default for Fields<'a> {
 }
 
 pub struct Request {
-    builder: RequestBuilder,
+    builder: Option<RequestBuilder>,
 }
+
+impl Authorized<Response> for Request {}
 
 impl<'a> Request {
     pub fn new(
@@ -40,43 +41,26 @@ impl<'a> Request {
         fields: Option<Fields>,
     ) -> Self {
         let fields = fields.unwrap_or_default();
-        let expansions = csv::<{ Expansion::COUNT }, Expansion>(expansions.unwrap_or(&[]));
-        let fields_user = csv::<{ Field::COUNT }, Field>(fields.user);
-        let fields_tweet = csv::<{ TweetField::COUNT }, TweetField>(fields.tweets);
 
         Self {
             builder: Self::builder_with_auth(
                 auth,
                 client()
-                    .get(crate::config::Endpoint::UserLookup.url())
+                    .get(crate::config::Endpoint::UserLookup.url(None))
                     .query(&[
                         ("usernames", usernames.join(",")),
-                        ("expansions", expansions),
-                        ("user.fields", fields_user),
-                        ("tweet.fields", fields_tweet),
+                        ("expansions", csv(expansions.unwrap_or(&[]))),
+                        ("user.fields", csv(fields.user)),
+                        ("tweet.fields", csv(fields.tweets)),
                     ]),
             ),
         }
     }
 }
 
-impl Authorized<UserLookupResponse> for Request {}
-
-impl<'a> super::Request<UserLookupResponse> for Request {
-    fn request(self) -> Result<UserLookupResponse, XError> {
-        self.builder
-            .send()
-            .map_err(|e| XError::Socket(e.to_string()))
-            .map(|response| match response.status().is_success() {
-                true => UserLookupResponse::try_into_from_bytes(
-                    &response.bytes().map_err(|e| XError::Reqwest(e))?,
-                ),
-
-                false => Err(XError::HttpGeneric(
-                    response.status(),
-                    response.text().unwrap_or("Unknown".into()),
-                )),
-            })?
+impl super::Request<Response> for Request {
+    fn builder(&mut self) -> Option<RequestBuilder> {
+        self.builder.take()
     }
 }
 
@@ -89,8 +73,8 @@ mod tests {
 
     #[test]
     fn integration_users_lookup_with_defaults() {
-        let id = "GJe6IFjFNwveQzBhJmaMIZzW5";
-        let secret = "f9kmkg3eQkxNB7thibc5lhhgavCq4eQmMrTdeO9aw4rIz4Hofb";
+        let id = "c2HAMlWTX2m3cVgNgA0oqLRqH";
+        let secret = "bwWKCB8KHHRnMDAKUa4cmZdp80FZxNsCLo2G1axDRHjb7nkOc2";
 
         let context = auth::Context::Caller(auth::Method::AppOnly { id, secret });
 
@@ -104,6 +88,6 @@ mod tests {
 
         let response = response.unwrap();
 
-        assert!(!response.users().is_empty())
+        assert!(!response.data.is_empty())
     }
 }

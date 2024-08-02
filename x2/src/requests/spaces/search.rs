@@ -2,12 +2,8 @@ use super::prelude::*;
 
 use crate::{
     model::{topics::Field as TopicField, users::Field as UserField},
-    responses::spaces::search::Response as SearchResponse,
+    responses::spaces::search::Response,
 };
-
-use rayon::prelude;
-
-use super::Authorized;
 
 #[derive(IntoStaticStr, Deserialize, EnumCount, Clone)]
 #[serde(rename_all = "snake_case")]
@@ -45,13 +41,15 @@ impl<'a> Default for Fields<'a> {
 }
 
 pub struct Request {
-    builder: RequestBuilder,
+    builder: Option<RequestBuilder>,
 }
 
-impl<'a> Request {
+impl Authorized<Response> for Request {}
+
+impl Request {
     pub fn new(
-        auth: &'a Context,
-        query: &'a str,
+        auth: &Context,
+        query: &str,
         state: State,
         expansions: Option<&[Expansion]>,
         fields: Option<Fields>,
@@ -59,16 +57,16 @@ impl<'a> Request {
         let fields = fields.unwrap_or_default();
         let expansions = expansions.unwrap_or_default();
 
-        let expansions = csv::<{ Expansion::COUNT }, Expansion>(expansions);
-        let fields_space = csv::<{ Field::COUNT }, Field>(fields.space);
-        let fields_user = csv::<{ UserField::COUNT }, UserField>(fields.user);
-        let fields_topic = csv::<{ TopicField::COUNT }, TopicField>(fields.topic);
+        let expansions = csv(expansions);
+        let fields_space = csv(fields.space);
+        let fields_user = csv(fields.user);
+        let fields_topic = csv(fields.topic);
 
         Self {
             builder: Self::builder_with_auth(
                 auth,
                 super::super::client()
-                    .get(crate::config::Endpoint::SpacesSearch.url())
+                    .get(Endpoint::SpacesSearch.url(None))
                     .query(&[
                         ("query", query),
                         ("state", state.into()),
@@ -82,23 +80,9 @@ impl<'a> Request {
     }
 }
 
-impl Authorized<SearchResponse> for Request {}
-
-impl<'a> super::Request<SearchResponse> for Request {
-    fn request(self) -> Result<SearchResponse, XError> {
-        self.builder
-            .send()
-            .map_err(|e| XError::Socket(e.to_string()))
-            .map(|response| match response.status().is_success() {
-                true => SearchResponse::try_into_from_bytes(
-                    &response.bytes().map_err(|e| XError::Reqwest(e))?,
-                ),
-
-                false => Err(XError::HttpGeneric(
-                    response.status(),
-                    response.text().unwrap_or("Unknown".into()),
-                )),
-            })?
+impl super::Request<Response> for Request {
+    fn builder(&mut self) -> Option<RequestBuilder> {
+        self.builder.take()
     }
 }
 
@@ -111,8 +95,8 @@ mod tests {
 
     #[test]
     fn integration_spaces_search_with_defaults() {
-        let id = "gUJTmN2jcD7zOg2kFcbbS3fSp";
-        let secret = "8tWsU562uAzSFaCP7860rGHd0yldWgDJGwwvlyrugqoGBB8qon";
+        let id = "c2HAMlWTX2m3cVgNgA0oqLRqH";
+        let secret = "bwWKCB8KHHRnMDAKUa4cmZdp80FZxNsCLo2G1axDRHjb7nkOc2";
 
         let context = auth::Context::Caller(auth::Method::AppOnly { id, secret });
 
@@ -125,6 +109,6 @@ mod tests {
 
         let response = response.unwrap();
 
-        assert!(!response.spaces().is_empty());
+        assert!(!response.data.is_empty());
     }
 }

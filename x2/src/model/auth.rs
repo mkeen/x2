@@ -49,8 +49,8 @@ where
     fn builder_with_auth(
         auth: &Context,
         builder: reqwest::blocking::RequestBuilder,
-    ) -> reqwest::blocking::RequestBuilder {
-        match auth {
+    ) -> Option<reqwest::blocking::RequestBuilder> {
+        Some(match auth {
             Context::Caller(unauthenticated) => match *unauthenticated {
                 Method::AppOnly { id, secret } => {
                     builder.basic_auth(encode(id), Some(encode(secret)))
@@ -59,6 +59,6 @@ where
             Context::Request(authenticated) => match authenticated {
                 RequestCredential::Bearer(bearer) => builder.bearer_auth(bearer),
             },
-        }
+        })
     }
 }
