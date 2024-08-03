@@ -2,8 +2,9 @@ pub mod prelude {
     pub use super::super::prelude::*;
 }
 
-pub use prelude::*;
+use prelude::*;
 
+pub(crate) use super::Authorized;
 pub(crate) use super::Request;
 
 #[derive(Debug, EnumProperty)]

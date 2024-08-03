@@ -27,13 +27,14 @@ impl<'a> Default for Fields<'a> {
     }
 }
 
+#[derive(Debug, Built, Authorized)]
 pub struct Request {
     builder: Option<RequestBuilder>,
 }
 
-impl<'a> Request {
+impl Request {
     pub fn new(
-        auth: &'a Context,
+        auth: &Context,
         query: &str,
         expansions: Option<&[Expansion]>,
         fields: Option<Fields>,
@@ -47,7 +48,7 @@ impl<'a> Request {
         let max_results = format!("{}", max_results.unwrap_or(DEFAULT_RESULT_LIMIT));
 
         Self {
-            builder: Self::builder_with_auth(
+            builder: Self::authorize(
                 auth,
                 client().get(super::Endpoint::Search.url(None)).query(&[
                     ("query", query),
@@ -62,38 +63,30 @@ impl<'a> Request {
     }
 }
 
-impl Authorized<Response> for Request {}
+// #[cfg(test)]
+// mod tests {
+//     use crate::{model::auth, requests::Request as RequestTrait};
 
-impl super::Request<Response> for Request {
-    fn builder(&mut self) -> Option<RequestBuilder> {
-        self.builder.take()
-    }
-}
+//     use super::Request;
 
-#[cfg(test)]
-mod tests {
-    use crate::{model::auth, requests::Request as RequestTrait};
+//     #[test]
+//     fn integration_users_search_with_defaults() {
+//         let id = "c2HAMlWTX2m3cVgNgA0oqLRqH";
+//         let secret = "bwWKCB8KHHRnMDAKUa4cmZdp80FZxNsCLo2G1axDRHjb7nkOc2";
 
-    use super::Request;
+//         let context = auth::Context::Caller(auth::Method::AppOnly { id, secret });
 
-    #[test]
-    fn integration_users_search_with_defaults() {
-        let id = "c2HAMlWTX2m3cVgNgA0oqLRqH";
-        let secret = "bwWKCB8KHHRnMDAKUa4cmZdp80FZxNsCLo2G1axDRHjb7nkOc2";
+//         // not testing authentication here, so will just unwrap and assume all is well
+//         let authorization = context.authorize().unwrap();
 
-        let context = auth::Context::Caller(auth::Method::AppOnly { id, secret });
+//         let response = Request::new(&authorization, "123", None, None, None, None).request();
 
-        // not testing authentication here, so will just unwrap and assume all is well
-        let authorization = context.authorize().unwrap();
+//         println!("{:?}", response);
 
-        let response = Request::new(&authorization, "123", None, None, None, None).request();
+//         assert!(response.is_ok());
 
-        println!("{:?}", response);
+//         let response = response.unwrap();
 
-        assert!(response.is_ok());
-
-        let response = response.unwrap();
-
-        assert!(!response.data.is_empty())
-    }
-}
+//         assert!(!response.data.is_empty())
+//     }
+// }

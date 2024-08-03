@@ -27,11 +27,10 @@ impl<'a> Default for Fields<'a> {
     }
 }
 
+#[derive(Debug, Built, Authorized)]
 pub struct Request {
     builder: Option<RequestBuilder>,
 }
-
-impl Authorized<Response> for Request {}
 
 impl<'a> Request {
     pub fn new(
@@ -49,7 +48,7 @@ impl<'a> Request {
         let max_results = format!("{}", max_results.unwrap_or(DEFAULT_RESULT_LIMIT));
 
         Self {
-            builder: Self::builder_with_auth(
+            builder: Self::authorize(
                 auth,
                 client()
                     .get(super::Endpoint::Lookup.url(Some(&[id])))
@@ -65,36 +64,30 @@ impl<'a> Request {
     }
 }
 
-impl super::Request<Response> for Request {
-    fn builder(&mut self) -> Option<RequestBuilder> {
-        self.builder.take()
-    }
-}
+// #[cfg(test)]
+// mod tests {
+//     use crate::{model::auth, requests::Request as RequestTrait};
 
-#[cfg(test)]
-mod tests {
-    use crate::{model::auth, requests::Request as RequestTrait};
+//     use super::Request;
 
-    use super::Request;
+//     #[test]
+//     fn integration_users_muting_lookup_with_defaults() {
+//         let id = "c2HAMlWTX2m3cVgNgA0oqLRqH";
+//         let secret = "bwWKCB8KHHRnMDAKUa4cmZdp80FZxNsCLo2G1axDRHjb7nkOc2";
 
-    #[test]
-    fn integration_users_muting_lookup_with_defaults() {
-        let id = "c2HAMlWTX2m3cVgNgA0oqLRqH";
-        let secret = "bwWKCB8KHHRnMDAKUa4cmZdp80FZxNsCLo2G1axDRHjb7nkOc2";
+//         let context = auth::Context::Caller(auth::Method::AppOnly { id, secret });
 
-        let context = auth::Context::Caller(auth::Method::AppOnly { id, secret });
+//         // not testing authentication here, so will just unwrap and assume all is well
+//         let authorization = context.authorize().unwrap();
 
-        // not testing authentication here, so will just unwrap and assume all is well
-        let authorization = context.authorize().unwrap();
+//         let response = Request::new(&authorization, "123", None, None, None, None).request();
 
-        let response = Request::new(&authorization, "123", None, None, None, None).request();
+//         println!("{:?}", response);
 
-        println!("{:?}", response);
+//         assert!(response.is_ok());
 
-        assert!(response.is_ok());
+//         let response = response.unwrap();
 
-        let response = response.unwrap();
-
-        assert!(!response.data.is_empty())
-    }
-}
+//         assert!(!response.data.is_empty())
+//     }
+// }

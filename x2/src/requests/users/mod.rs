@@ -1,10 +1,11 @@
 pub(crate) mod prelude {
     pub(crate) use super::super::Endpoint as EndpointTrait;
-    pub(crate) use super::super::{client, prelude::*, RequestBuilder};
+    pub(crate) use super::super::{client, prelude::*};
     pub(crate) use crate::model::tweets::Field as TweetField;
     pub(crate) use crate::model::users::Field;
 }
 
+pub(crate) use super::Authorized;
 pub(crate) use super::Request;
 
 pub mod blocking;

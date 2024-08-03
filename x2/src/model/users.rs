@@ -1,6 +1,6 @@
 use super::{
     entities::Entities,
-    prelude::{Deserialize, EnumCount, Getters, IntoStaticStr},
+    prelude::{Deserialize, EnumCount, IntoStaticStr},
     tweets::Tweet,
     withheld::Withheld,
 };
@@ -72,7 +72,7 @@ pub enum Field {
     Withheld,
 }
 
-#[derive(Debug, Deserialize, Getters)]
+#[derive(Debug, Deserialize)]
 pub struct User {
     id: Option<String>,
     name: Option<String>,

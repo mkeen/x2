@@ -1,3 +1,5 @@
+use crate::model::auth::{Context, Method, RequestCredential};
+
 use super::prelude::*;
 
 use serde::{de::Visitor, Deserializer};
@@ -8,6 +10,14 @@ use std::fmt;
 pub enum Response {
     #[serde(deserialize_with = "deserialize_response")]
     Bearer(String),
+}
+
+impl<'a> Into<Context<'a>> for Response {
+    fn into(self) -> Context<'a> {
+        match self {
+            Response::Bearer(bearer) => Context::Request(RequestCredential::Bearer(bearer)),
+        }
+    }
 }
 
 fn deserialize_response<'de, D>(deserializer: D) -> Result<String, D::Error>

@@ -14,12 +14,9 @@ pub mod users;
 
 pub type Pattern<T> = T;
 
-pub trait Response {
-    fn try_into_from_bytes<'a, T>(bytes: &'a [u8]) -> Result<T, crate::model::error::XError>
-    where
-        T: Deserialize<'a>,
-    {
-        serde_json::from_slice::<T>(bytes)
+pub trait Response: for<'de> Deserialize<'de> {
+    fn try_into_from_bytes<'de>(bytes: &'de [u8]) -> Result<Self, crate::model::error::XError> {
+        serde_json::from_slice::<Self>(bytes)
             .map_err(|e| XError::Deserialize(e))
             .map(|e| e)
     }
@@ -30,14 +27,14 @@ pub struct Meta {
     pub result: Option<u64>,
 }
 
-#[derive(Debug, Deserialize, Getters)]
+#[derive(Debug, Deserialize)]
 pub struct Data<D, I> {
     pub data: D,
     pub includes: Option<I>,
     pub meta: Option<Meta>,
 }
 
-#[derive(Debug, Deserialize, Getters)]
+#[derive(Debug, Deserialize)]
 pub struct SimpleData<D> {
     pub data: D,
 }

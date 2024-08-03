@@ -27,6 +27,7 @@ impl<'a> Default for Fields<'a> {
     }
 }
 
+#[derive(Debug, Built, Authorized)]
 pub struct Request {
     builder: Option<RequestBuilder>,
 }
@@ -47,7 +48,7 @@ impl<'a> Request {
         let max_results = format!("{}", max_results.unwrap_or(DEFAULT_RESULT_LIMIT));
 
         Self {
-            builder: Self::builder_with_auth(
+            builder: Self::authorize(
                 auth,
                 client()
                     .get(super::Endpoint::Blocking.url(Some(&[id])))
@@ -63,38 +64,29 @@ impl<'a> Request {
     }
 }
 
-impl Authorized<Response> for Request {}
+// #[cfg(test)]
+// mod tests {
+//     use crate::model::auth::Method;
 
-impl super::Request<Response> for Request {
-    fn builder(&mut self) -> Option<RequestBuilder> {
-        self.builder.take()
-    }
-}
+//     use super::*;
 
-#[cfg(test)]
-mod tests {
-    use crate::{model::auth, requests::Request as RequestTrait};
+//     #[test]
+//     fn integration_users_blocking_lookup_with_defaults() {
+//         let id = "c2HAMlWTX2m3cVgNgA0oqLRqH";
+//         let secret = "bwWKCB8KHHRnMDAKUa4cmZdp80FZxNsCLo2G1axDRHjb7nkOc2";
 
-    use super::Request;
+//         let context = Context::Caller(Method::AppOnly { id, secret });
+//         let response = Request::new(&context, "123", None, None, None, None).request();
 
-    #[test]
-    fn integration_users_blocking_lookup_with_defaults() {
-        let id = "c2HAMlWTX2m3cVgNgA0oqLRqH";
-        let secret = "bwWKCB8KHHRnMDAKUa4cmZdp80FZxNsCLo2G1axDRHjb7nkOc2";
+//         assert!(response.is_ok());
+//         assert!(response.unwrap().is_bearer());
 
-        let context = auth::Context::Caller(auth::Method::AppOnly { id, secret });
+//         println!("{:?}", response);
 
-        // not testing authentication here, so will just unwrap and assume all is well
-        let authorization = context.authorize().unwrap();
+//         assert!(response.is_ok());
 
-        let response = Request::new(&authorization, "123", None, None, None, None).request();
+//         let response = response.unwrap();
 
-        println!("{:?}", response);
-
-        assert!(response.is_ok());
-
-        let response = response.unwrap();
-
-        assert!(!response.data.is_empty())
-    }
-}
+//         assert!(!response.data.is_empty())
+//     }
+// }

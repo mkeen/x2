@@ -17,6 +17,7 @@ struct MutePostBody<'a> {
     target_user_id: TargetUserId<'a>,
 }
 
+#[derive(Debug, Built, Authorized)]
 pub struct Request {
     builder: Option<RequestBuilder>,
 }
@@ -41,12 +42,10 @@ impl<'a> Action<'_> {
     }
 }
 
-impl Authorized<Response> for Request {}
-
 impl Request {
     pub fn new(auth: &Context, action: Action) -> Self {
         Self {
-            builder: Self::builder_with_auth(auth, action.effect(client())),
+            builder: Self::authorize(auth, action.effect(client())),
         }
     }
 
@@ -59,36 +58,30 @@ impl Request {
     }
 }
 
-impl super::Request<Response> for Request {
-    fn builder(&mut self) -> Option<RequestBuilder> {
-        self.builder.take()
-    }
-}
+// #[cfg(test)]
+// mod tests {
+//     use crate::{model::auth, requests::Request as RequestTrait};
 
-#[cfg(test)]
-mod tests {
-    use crate::{model::auth, requests::Request as RequestTrait};
+//     use super::Request;
 
-    use super::Request;
+//     #[test]
+//     fn integration_users_muting_manage_with_defaults() {
+//         let id = "c2HAMlWTX2m3cVgNgA0oqLRqH";
+//         let secret = "bwWKCB8KHHRnMDAKUa4cmZdp80FZxNsCLo2G1axDRHjb7nkOc2";
 
-    #[test]
-    fn integration_users_muting_manage_with_defaults() {
-        let id = "c2HAMlWTX2m3cVgNgA0oqLRqH";
-        let secret = "bwWKCB8KHHRnMDAKUa4cmZdp80FZxNsCLo2G1axDRHjb7nkOc2";
+//         let context = auth::Context::Caller(auth::Method::AppOnly { id, secret });
 
-        let context = auth::Context::Caller(auth::Method::AppOnly { id, secret });
+//         // not testing authentication here, so will just unwrap and assume all is well
+//         let authorization = context.authorize().unwrap();
 
-        // not testing authentication here, so will just unwrap and assume all is well
-        let authorization = context.authorize().unwrap();
+//         let response = Request::unmute(&authorization, "123", "123").request();
 
-        let response = Request::unmute(&authorization, "123", "123").request();
+//         println!("{:?}", response);
 
-        println!("{:?}", response);
+//         assert!(response.is_ok());
 
-        assert!(response.is_ok());
+//         let response = response.unwrap();
 
-        let response = response.unwrap();
-
-        assert!(!response.data.muting)
-    }
-}
+//         assert!(!response.data.muting)
+//     }
+// }

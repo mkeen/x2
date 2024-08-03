@@ -40,11 +40,10 @@ impl<'a> Default for Fields<'a> {
     }
 }
 
+#[derive(Debug, Built, Authorized)]
 pub struct Request {
-    builder: Option<RequestBuilder>,
+    builder: Option<super::RequestBuilder>,
 }
-
-impl Authorized<Response> for Request {}
 
 impl Request {
     pub fn new(
@@ -63,7 +62,7 @@ impl Request {
         let fields_topic = csv(fields.topic);
 
         Self {
-            builder: Self::builder_with_auth(
+            builder: Self::authorize(
                 auth,
                 super::super::client()
                     .get(super::Endpoint::Search.url(None))
@@ -80,30 +79,22 @@ impl Request {
     }
 }
 
-impl super::Request<Response> for Request {
-    fn builder(&mut self) -> Option<RequestBuilder> {
-        self.builder.take()
-    }
-}
-
 #[cfg(test)]
 mod tests {
-    use crate::{
-        model::auth,
-        requests::{spaces::search::*, Request as RequestTrait},
-    };
+    use super::*;
+    use crate::model::auth::Method;
 
     #[test]
     fn integration_spaces_search_with_defaults() {
         let id = "c2HAMlWTX2m3cVgNgA0oqLRqH";
         let secret = "bwWKCB8KHHRnMDAKUa4cmZdp80FZxNsCLo2G1axDRHjb7nkOc2";
 
-        let context = auth::Context::Caller(auth::Method::AppOnly { id, secret });
+        let context = Context::Caller(Method::AppOnly { id, secret });
 
         // not testing authentication here, so will just unwrap and assume all is well
-        let authorization = context.authorize().unwrap();
+        let context = context.authenticate().unwrap();
 
-        let response = Request::new(&authorization, "crypto", State::All, None, None).request();
+        let response = Request::new(&context, "crypto", State::All, None, None).request();
 
         assert!(response.is_ok());
 

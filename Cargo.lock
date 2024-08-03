@@ -304,17 +304,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7a81dae078cea95a014a339291cec439d2f232ebe854a9d672b796c6afafa9b7"
 
 [[package]]
-name = "derive-getters"
-version = "0.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0a6433aac097572ea8ccc60b3f2e756c661c9aeed9225cdd4d0cb119cb7ff6ba"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn",
-]
-
-[[package]]
 name = "either"
 version = "1.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1628,7 +1617,6 @@ version = "0.1.0"
 dependencies = [
  "bytes",
  "chrono",
- "derive-getters",
  "geojson",
  "reqwest",
  "serde",

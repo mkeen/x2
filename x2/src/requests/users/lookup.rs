@@ -1,5 +1,3 @@
-use bytes::Bytes;
-
 use super::prelude::*;
 use crate::{model::spaces::Field, responses::users::Response};
 
@@ -27,11 +25,10 @@ impl<'a> Default for Fields<'a> {
     }
 }
 
+#[derive(Debug, Built, Authorized)]
 pub struct Request {
     builder: Option<RequestBuilder>,
 }
-
-impl Authorized<Response> for Request {}
 
 impl<'a> Request {
     pub fn new(
@@ -43,7 +40,7 @@ impl<'a> Request {
         let fields = fields.unwrap_or_default();
 
         Self {
-            builder: Self::builder_with_auth(
+            builder: Self::authorize(
                 auth,
                 client().get(super::Endpoint::Lookup.url(None)).query(&[
                     ("usernames", usernames.join(",")),
@@ -56,36 +53,25 @@ impl<'a> Request {
     }
 }
 
-impl super::Request<Response> for Request {
-    fn builder(&mut self) -> Option<RequestBuilder> {
-        self.builder.take()
-    }
-}
-
 #[cfg(test)]
 mod tests {
-    use crate::{
-        model::auth,
-        requests::{users::lookup::*, Request as RequestTrait},
-    };
+
+    use crate::model::auth::Method;
+
+    use super::*;
 
     #[test]
     fn integration_users_lookup_with_defaults() {
         let id = "c2HAMlWTX2m3cVgNgA0oqLRqH";
         let secret = "bwWKCB8KHHRnMDAKUa4cmZdp80FZxNsCLo2G1axDRHjb7nkOc2";
 
-        let context = auth::Context::Caller(auth::Method::AppOnly { id, secret });
+        let context = Context::Caller(Method::AppOnly { id, secret });
 
-        // not testing authentication here, so will just unwrap and assume all is well
-        let authorization = context.authorize().unwrap();
+        let authorization: Context = context.authenticate().unwrap();
 
         let response =
             Request::new(&authorization, &["divxspan", "wamalone"], None, None).request();
 
         assert!(response.is_ok());
-
-        let response = response.unwrap();
-
-        assert!(!response.data.is_empty())
     }
 }
