@@ -8,12 +8,8 @@ mod prelude {
     pub use crate::model::users::*;
 }
 
-use prelude::*;
+pub(crate) use super::Response;
 
-pub type Response = Pattern<Data<Vec<User>, Includes>>;
-
-impl super::Response for Response {
-    // User Basic List of Users Handler
-}
-
+pub mod blocking;
+pub mod lookup;
 pub mod muting;

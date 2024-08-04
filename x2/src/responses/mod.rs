@@ -1,8 +1,11 @@
 pub mod prelude {
     pub use super::super::_prelude::*;
-    pub use super::super::requests::Request;
+    pub use super::super::requests;
     pub use super::Pattern;
+    pub(crate) use requests::{Endpoint, Request};
 }
+
+use std::marker::PhantomData;
 
 use prelude::*;
 
@@ -15,6 +18,8 @@ pub mod users;
 pub type Pattern<T> = T;
 
 pub trait Response: for<'de> Deserialize<'de> {
+    type Request: super::requests::Request<Self>;
+
     fn try_into_from_bytes<'de>(bytes: &'de [u8]) -> Result<Self, crate::model::error::XError> {
         serde_json::from_slice::<Self>(bytes)
             .map_err(|e| XError::Deserialize(e))
@@ -28,7 +33,7 @@ pub struct Meta {
 }
 
 #[derive(Debug, Deserialize)]
-pub struct Data<D, I> {
+pub struct Data<D, I, const ID: usize> {
     pub data: D,
     pub includes: Option<I>,
     pub meta: Option<Meta>,

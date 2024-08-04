@@ -9,12 +9,12 @@ use model::auth::Method;
 static PARAMS: [(&str, &str); 1] = [("grant_type", "client_credentials")];
 
 #[derive(Debug, Built, Authorized)]
-pub struct Request<'a> {
-    builder: Option<RequestBuilder<'a>>,
+pub struct Request {
+    builder: Option<RequestBuilder>,
 }
 
-impl<'a> Request<'a> {
-    pub fn new(auth: &'a Context) -> Self {
+impl Request {
+    pub fn new(auth: &Context) -> Self {
         match auth {
             Context::Caller(caller) => match caller {
                 Method::OAuth10AUser {
@@ -22,15 +22,11 @@ impl<'a> Request<'a> {
                     app_secret,
                     user_id,
                     user_secret,
-                } => {
-                    Self {
-                        builder: Some(RequestBuilder::Oauth1(
-                            Self::authorize_oauth1(auth)
-                                .get(Endpoint::Authentication10A.url(None))
-                                .query(&[("callback_uri", "oob")]), // todo: do it like PARAMS
-                        )),
-                    }
-                }
+                } => Self {
+                    builder: Some(RequestBuilder::Oauth1(
+                        Self::authorize_oauth1(auth).get(Endpoint::Authentication10A.url(None)),
+                    )),
+                },
 
                 Method::AppOnly { id, secret } => {
                     // todo, not the cleanest that we have id and secret in scope here

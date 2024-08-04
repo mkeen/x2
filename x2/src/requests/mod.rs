@@ -1,6 +1,5 @@
 pub(crate) mod prelude {
-    pub(crate) type DefaultSigner<'a> =
-        Signer<'a, reqwest_oauth1::Secrets<'a>, reqwest_oauth1::DefaultSM>;
+    pub(crate) type DefaultSigner = Signer<reqwest_oauth1::Secrets, reqwest_oauth1::DefaultSM>;
     pub use super::super::_prelude::*;
     pub use super::super::model::auth::Context;
     pub use super::super::responses::Response;
@@ -13,8 +12,8 @@ pub(crate) mod prelude {
     pub use super::Authorized as AuthorizeTrait;
     pub use super::Request as RequestTrait;
     pub(crate) use x2_derive::{Authorized, Built, UrlEndpoint};
-    pub(crate) type RequestBuilder<'a> = super::ClientAgnosticBuilder<'a>;
-    pub(crate) type Oauth1RequestBuilder<'a> = reqwest_oauth1::RequestBuilder<DefaultSigner<'a>>;
+    pub(crate) type RequestBuilder = super::ClientAgnosticBuilder;
+    pub(crate) type Oauth1RequestBuilder = reqwest_oauth1::RequestBuilder<DefaultSigner>;
 }
 
 use prelude::*;
@@ -27,14 +26,14 @@ static BASE_CLIENT: OnceLock<reqwest::blocking::Client> = OnceLock::new();
 
 pub mod auth;
 //pub mod limits;
-//pub mod spaces;
+pub mod spaces;
 //pub mod usage_tweets;
 pub mod users;
 pub mod util;
 
-pub trait Request<'a, R: Response> {
-    fn builder(&mut self) -> Option<ClientAgnosticBuilder<'a>>;
-    fn update_builder(&mut self, builder: ClientAgnosticBuilder<'a>);
+pub trait Request<R: Response>: Sized {
+    fn builder(&mut self) -> Option<ClientAgnosticBuilder>;
+    fn update_builder(&mut self, builder: ClientAgnosticBuilder);
 
     fn request(&mut self) -> Result<R, XError> {
         self.builder()
@@ -57,13 +56,13 @@ pub trait Request<'a, R: Response> {
 }
 
 #[derive(Debug)]
-pub enum ClientAgnosticBuilder<'a> {
+pub enum ClientAgnosticBuilder {
     Native(reqwest::blocking::RequestBuilder),
-    Oauth1(Oauth1RequestBuilder<'a>), // todo: check upstream for why a lifetime is needed here
+    Oauth1(Oauth1RequestBuilder), // todo: check upstream for why a lifetime is needed here
 }
 
-impl<'a> ClientAgnosticBuilder<'a> {
-    fn get_oauth1(self) -> Option<Oauth1RequestBuilder<'a>> {
+impl ClientAgnosticBuilder {
+    fn get_oauth1(self) -> Option<Oauth1RequestBuilder> {
         match self {
             ClientAgnosticBuilder::Oauth1(oauth1) => Some(oauth1),
             _ => None,
@@ -100,21 +99,21 @@ pub(crate) fn client() -> &'static ReqwestClient {
     })
 }
 
-pub trait Authorized<'a, R>: Request<'a, R>
+pub trait Authorized<R>: Request<R>
 where
     R: Response,
 {
     fn authorize_simple(
         auth: &Context,
         builder: reqwest::blocking::RequestBuilder,
-    ) -> Option<RequestBuilder<'a>> {
+    ) -> Option<RequestBuilder> {
         Some(RequestBuilder::Native(auth.authorize_simple(builder)))
     }
 
     fn authorize_oauth1(
-        auth: &'a Context,
+        auth: &Context,
     ) -> reqwest_oauth1::Client<
-        reqwest_oauth1::Signer<'a, reqwest_oauth1::Secrets<'a>, reqwest_oauth1::DefaultSM>,
+        reqwest_oauth1::Signer<reqwest_oauth1::Secrets, reqwest_oauth1::DefaultSM>,
     > {
         auth.authorize_oauth1(client())
     }

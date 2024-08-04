@@ -1,6 +1,6 @@
 use super::prelude::*;
 
-use crate::{requests::ClientAgnosticBuilder, responses::users::muting::Response};
+use crate::{requests::ClientAgnosticBuilder, responses::users::muting::manage::Response};
 
 type UserId<'a> = &'a str;
 type SourceUserId<'a> = UserId<'a>;
@@ -18,8 +18,8 @@ struct MutePostBody<'a> {
 }
 
 #[derive(Debug, Built, Authorized)]
-pub struct Request<'a> {
-    builder: Option<RequestBuilder<'a>>,
+pub struct Request {
+    builder: Option<RequestBuilder>,
 }
 
 pub enum Action<'a> {
@@ -42,18 +42,18 @@ impl<'a> Action<'_> {
     }
 }
 
-impl<'a> Request<'a> {
-    pub fn new(auth: &'a Context, action: Action) -> Self {
+impl Request {
+    pub fn new(auth: &Context, action: Action) -> Self {
         Self {
             builder: Some(action.effect(Self::authorize_oauth1(auth))),
         }
     }
 
-    pub fn mute(auth: &'a Context, source_user_id: &str, target_user_id: &str) -> Self {
+    pub fn mute(auth: &Context, source_user_id: &str, target_user_id: &str) -> Self {
         Self::new(auth, Action::Mute(source_user_id, target_user_id))
     }
 
-    pub fn unmute(auth: &'a Context, source_user_id: &str, target_user_id: &str) -> Self {
+    pub fn unmute(auth: &Context, source_user_id: &str, target_user_id: &str) -> Self {
         Self::new(auth, Action::Unmute(source_user_id, target_user_id))
     }
 }
@@ -84,7 +84,9 @@ mod tests {
 
         let response = Request::unmute(&context, "1444148135954108418", "13000192").request();
 
-        println!("{:?}", response);
+        let response2 = Request::mute(&context, "1444148135954108418", "13000192").request();
+
+        println!("{:?} {:?}", response, response2);
 
         assert!(response.is_ok());
     }

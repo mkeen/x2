@@ -2,7 +2,7 @@ use tinyvec::ArrayVec;
 
 use super::prelude::*;
 
-use crate::responses::users::Response;
+use crate::responses::users::muting::lookup::Response;
 
 #[derive(IntoStaticStr, Deserialize, EnumCount, Clone)]
 #[serde(rename_all = "snake_case")]
@@ -31,13 +31,13 @@ impl<'a> Default for Fields<'a> {
 }
 
 #[derive(Debug, Built, Authorized)]
-pub struct Request<'a> {
-    builder: Option<RequestBuilder<'a>>,
+pub struct Request {
+    builder: Option<RequestBuilder>,
 }
 
-impl<'a> Request<'a> {
+impl Request {
     pub fn new(
-        auth: &'a Context,
+        auth: &Context,
         id: &str,
         expansions: Option<&[Expansion]>,
         fields: Option<Fields>,

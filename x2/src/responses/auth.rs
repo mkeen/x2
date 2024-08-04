@@ -52,4 +52,6 @@ where
     deserializer.deserialize_map(StringVisitor)
 }
 
-impl super::Response for Response {}
+impl super::Response for Response {
+    type Request = requests::auth::Request;
+}
