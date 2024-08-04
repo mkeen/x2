@@ -1,8 +1,8 @@
-pub mod prelude {
-    pub use super::super::prelude::*;
+pub(crate) mod prelude {
+    pub(crate) use super::super::prelude::*;
 }
 
-use prelude::*;
+use prelude::EnumProperty;
 
 pub(crate) use super::Authorized;
 pub(crate) use super::Request;

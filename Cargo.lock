@@ -1912,7 +1912,6 @@ dependencies = [
 name = "x2"
 version = "0.1.0"
 dependencies = [
- "bytes",
  "chrono",
  "geojson",
  "reqwest",

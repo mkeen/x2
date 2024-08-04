@@ -3,7 +3,6 @@ pub(crate) use super::prelude as _prelude;
 pub const R_ID: u8 = 0;
 
 mod prelude {
-    pub use super::super::{Data, Meta, SimpleData};
     pub use super::_prelude::*;
     pub use crate::model::users::*;
 }

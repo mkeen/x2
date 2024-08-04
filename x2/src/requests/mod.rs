@@ -1,5 +1,5 @@
 pub(crate) mod prelude {
-    pub(crate) type DefaultSigner = Signer<reqwest_oauth1::Secrets, reqwest_oauth1::DefaultSM>;
+    pub type DefaultSigner = Signer<reqwest_oauth1::Secrets, reqwest_oauth1::DefaultSM>;
     pub use super::super::_prelude::*;
     pub use super::super::model::auth::Context;
     pub use super::super::responses::Response;
@@ -8,10 +8,9 @@ pub(crate) mod prelude {
     use reqwest_oauth1::Signer;
     pub use serde::Serialize;
     pub static DEFAULT_RESULT_LIMIT: u16 = 25;
-    pub(crate) use super::super::responses;
     pub use super::Authorized as AuthorizeTrait;
     pub use super::Request as RequestTrait;
-    pub(crate) use x2_derive::{Authorized, Built, UrlEndpoint, XData};
+    pub(crate) use x2_derive::{Authorized, Built, UrlEndpoint};
     pub(crate) type RequestBuilder = super::ClientAgnosticBuilder;
     pub(crate) type Oauth1RequestBuilder = reqwest_oauth1::RequestBuilder<DefaultSigner>;
 }
@@ -30,7 +29,7 @@ pub mod spaces;
 //pub mod usage_tweets;
 pub mod tweets;
 pub mod users;
-pub mod util;
+mod util;
 
 pub trait Request<R: Response>: Sized {
     fn builder(&mut self) -> Option<ClientAgnosticBuilder>;
@@ -63,20 +62,6 @@ pub enum ClientAgnosticBuilder {
 }
 
 impl ClientAgnosticBuilder {
-    fn get_oauth1(self) -> Option<Oauth1RequestBuilder> {
-        match self {
-            ClientAgnosticBuilder::Oauth1(oauth1) => Some(oauth1),
-            _ => None,
-        }
-    }
-
-    fn get_native(self) -> Option<reqwest::blocking::RequestBuilder> {
-        match self {
-            ClientAgnosticBuilder::Native(native) => Some(native),
-            _ => None,
-        }
-    }
-
     fn send(self) -> Result<reqwest::blocking::Response, XError> {
         match self {
             ClientAgnosticBuilder::Native(native) => native.send().map_err(|e| XError::Reqwest(e)),
@@ -122,19 +107,19 @@ where
 
 pub(crate) trait Endpoint: EnumProperty {
     fn get_request_path(&self) -> &str {
-        self.get_str(super::config::URL_PARAM_NAME).unwrap()
+        self.get_str(super::URL_PARAM_NAME).unwrap()
     }
 
     fn replace_url_params(&self, params: &[&str]) -> String {
         self.get_request_path()
-            .split(super::config::URL_PARAM_FLAG)
+            .split(super::URL_PARAM_FLAG)
             .enumerate()
             .map(|(i, s)| format!("{}{}", s, params.get(i).map_or("", |&x| x)))
             .collect::<String>()
     }
 
     fn url(&self, params: Option<&[&str]>) -> Url {
-        let params = params.unwrap_or(&super::config::DEFAULT_URL_PARAMS);
+        let params = params.unwrap_or(&super::DEFAULT_URL_PARAMS);
         Url::parse(&format!(
             "https://api.twitter.com/{}",
             self.replace_url_params(params)

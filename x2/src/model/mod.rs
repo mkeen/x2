@@ -1,6 +1,5 @@
 pub(crate) mod prelude {
     pub use super::super::_prelude::*;
-    pub use super::EMPTY_STRING;
     pub use x2_derive::XData;
 }
 

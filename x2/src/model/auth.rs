@@ -2,25 +2,14 @@ use super::prelude::*;
 
 use crate::requests::{auth::Request as AuthRequest, Request};
 
-use reqwest::{
-    blocking::Client,
-    header::{HeaderName, HeaderValue},
-};
-use strum::EnumIs;
 use urlencoding::encode;
 
-use reqwest;
 use reqwest_oauth1::OAuthClientProvider;
 
 #[derive(EnumIs, Debug, Clone)]
 pub enum Context<'a> {
     Caller(Method<'a>),
     Request(RequestCredential),
-}
-
-pub enum BuildPhase {
-    Client(Client),
-    Builder(reqwest::blocking::RequestBuilder),
 }
 
 impl<'a> Context<'a> {

@@ -17,10 +17,10 @@
 //!
 
 pub(crate) mod _prelude {
-    pub(crate) use super::model;
+    pub use super::{model, requests, responses};
     pub use crate::model::error::*;
     pub use serde::Deserialize;
-    pub use strum::{self, EnumCount, EnumDiscriminants, EnumIs, EnumProperty, IntoStaticStr};
+    pub use strum::{self, EnumCount, EnumIs, EnumProperty, IntoStaticStr};
 }
 
 pub mod prelude {

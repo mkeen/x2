@@ -38,7 +38,7 @@ impl<'a> super::Request<'a> for Request<'a> {
             RequestCredential::Bearer(bearer) => Response::try_from_bytes(
                 &self
                     .client
-                    .get(crate::config::Endpoint::RateLimit.url())
+                    .get(Endpoint::RateLimit.url())
                     .bearer_auth(bearer)
                     .send()
                     .map_err(|e| XError::Auth(e))?

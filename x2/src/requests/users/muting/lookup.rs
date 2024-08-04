@@ -1,8 +1,6 @@
-use tinyvec::ArrayVec;
-
 use super::prelude::*;
 
-use crate::responses::users::muting::lookup::Response;
+use responses::users::muting::lookup::Response;
 
 #[derive(IntoStaticStr, Deserialize, EnumCount, Clone)]
 #[serde(rename_all = "snake_case")]

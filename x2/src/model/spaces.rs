@@ -1,8 +1,7 @@
 use super::prelude::{Deserialize, EnumCount, IntoStaticStr, XData};
 
 use super::users::User;
-use super::EMPTY_STRING;
-use chrono::{self, DateTime, Utc};
+use chrono::{DateTime, Utc};
 
 #[derive(Debug, Deserialize, IntoStaticStr, Default, Clone)]
 #[serde(rename_all = "snake_case")]

@@ -1,6 +1,6 @@
 pub(crate) mod prelude {
+    pub(crate) use super::super::prelude::*;
     pub(crate) use super::super::Endpoint as EndpointTrait;
-    pub(crate) use super::super::{client, prelude::*};
     pub(crate) use crate::model::media::Field as MediaField;
     pub(crate) use crate::model::places::Field as PlaceField;
     pub(crate) use crate::model::polls::Field as PollField;

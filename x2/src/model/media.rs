@@ -1,9 +1,4 @@
-use super::{
-    entities::Entities,
-    prelude::{Deserialize, EnumCount, IntoStaticStr},
-    tweets::Tweet,
-    withheld::Withheld,
-};
+use super::prelude::{Deserialize, EnumCount, IntoStaticStr};
 
 #[derive(Debug, Deserialize)]
 pub struct Metrics {
@@ -27,7 +22,7 @@ pub enum Field {
     #[strum(serialize = "preview_image_url")]
     PreviewImageUrl,
     #[strum(serialize = "type")]
-    _Type,
+    Type,
     #[strum(serialize = "url")]
     Url,
     #[strum(serialize = "width")]

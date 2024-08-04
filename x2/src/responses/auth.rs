@@ -1,6 +1,6 @@
-use crate::model::auth::{Context, Method, RequestCredential};
-
 use super::prelude::*;
+
+use model::auth::{Context, RequestCredential};
 
 use serde::{de::Visitor, Deserializer};
 use std::fmt;

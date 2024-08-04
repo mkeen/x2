@@ -58,7 +58,7 @@ impl<'a> Request {
             builder: Self::builder_with_auth(
                 auth,
                 super::super::client()
-                    .get(crate::config::Endpoint::UserLookup.url())
+                    .get(Endpoint::UserLookup.url())
                     .query(&[
                         ("usernames", &usernames),
                         ("expansions", &expansions),
