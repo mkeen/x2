@@ -6,4 +6,5 @@ mod prelude {
 
 pub(crate) use super::Response;
 
+pub mod lookup;
 pub mod search;

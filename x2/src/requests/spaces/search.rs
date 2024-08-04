@@ -5,6 +5,8 @@ use crate::{
     responses::spaces::search::Response,
 };
 
+const MAX_PARAM_MEMBERS: usize = 6;
+
 #[derive(IntoStaticStr, Deserialize, EnumCount, Clone)]
 #[serde(rename_all = "snake_case")]
 pub enum Expansion {
@@ -56,19 +58,28 @@ impl Request {
         let fields = fields.unwrap_or_default();
         let expansions = expansions.unwrap_or_default();
 
+        let state: &str = state.into();
+
+        let fixed_query: [(String, String); MAX_PARAM_MEMBERS] = [
+            ("query".into(), query.into()),
+            ("state".into(), state.into()),
+            ("expansions".into(), csv(expansions)),
+            ("space.fields".into(), csv(fields.space)),
+            ("user.fields".into(), csv(fields.user)),
+            ("topic.fields".into(), csv(fields.topic)),
+        ];
+
         Self {
             builder: Self::authorize_simple(
                 auth,
                 super::super::client()
                     .get(super::Endpoint::Search.url(None))
-                    .query(&[
-                        ("query", query),
-                        ("state", state.into()),
-                        ("expansions", csv(expansions).as_str()),
-                        ("space.fields", csv(fields.space).as_str()),
-                        ("user.fields", csv(fields.user).as_str()),
-                        ("topic.fields", csv(fields.topic).as_str()),
-                    ]),
+                    .query(
+                        &fixed_query
+                            .iter()
+                            .filter(|(_, param_entry)| !param_entry.is_empty())
+                            .collect::<Vec<&(String, String)>>(),
+                    ),
             ),
         }
     }
@@ -92,6 +103,8 @@ mod tests {
         let response = Request::new(&context, "crypto", State::All, None, None).request();
 
         assert!(response.is_ok());
+
+        println!("{:?}????", response);
 
         let response = response.unwrap();
 
