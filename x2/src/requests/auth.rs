@@ -4,33 +4,59 @@ use std::collections::HashMap;
 
 use responses::auth::Response;
 
+use model::auth::Method;
+
 static PARAMS: [(&str, &str); 1] = [("grant_type", "client_credentials")];
 
 #[derive(Debug, Built, Authorized)]
-pub struct Request {
-    builder: Option<super::RequestBuilder>,
+pub struct Request<'a> {
+    builder: Option<RequestBuilder<'a>>,
 }
 
-impl Request {
-    pub fn new(auth: &Context) -> Self {
-        Self {
-            builder: Self::authorize(
-                auth,
-                super::client()
-                    .post(Endpoint::Authentication.url(None))
-                    .form(&HashMap::from(PARAMS)),
-            ),
+impl<'a> Request<'a> {
+    pub fn new(auth: &'a Context) -> Self {
+        match auth {
+            Context::Caller(caller) => match caller {
+                Method::OAuth10AUser {
+                    app_id,
+                    app_secret,
+                    user_id,
+                    user_secret,
+                } => {
+                    Self {
+                        builder: Some(RequestBuilder::Oauth1(
+                            Self::authorize_oauth1(auth)
+                                .get(Endpoint::Authentication10A.url(None))
+                                .query(&[("callback_uri", "oob")]), // todo: do it like PARAMS
+                        )),
+                    }
+                }
+
+                Method::AppOnly { id, secret } => {
+                    // todo, not the cleanest that we have id and secret in scope here
+                    Self {
+                        builder: Self::authorize_simple(
+                            auth,
+                            super::client()
+                                .post(Endpoint::Authentication.url(None))
+                                .form(&HashMap::from(PARAMS)),
+                        ),
+                    }
+                }
+            },
+
+            _ => panic!("wrong auth creds"),
         }
     }
 }
 
-#[derive(Debug, EnumProperty)]
+#[derive(Debug, EnumProperty, UrlEndpoint)]
 pub enum Endpoint {
     #[strum(props(Path = "oauth2/token"))]
     Authentication,
+    #[strum(props(Path = "oauth/request_token"))]
+    Authentication10A,
 }
-
-impl super::Endpoint for Endpoint {}
 
 #[cfg(test)]
 mod tests {

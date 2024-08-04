@@ -23,6 +23,8 @@ pub enum XError {
     ReadResponseBytes(reqwest::Error),
     #[error("Reqwest Error: {0}")]
     Reqwest(reqwest::Error),
+    #[error("Reqwest oauth1 Error: {0}")]
+    ReqwestOauth1(reqwest_oauth1::Error),
     #[error("Invalid UTF8")]
     InvalidUtf8Response,
     #[error("Socket Error: {0}")]
@@ -53,4 +55,6 @@ pub enum LibError {
     UrlParsingError(String),
     #[error("Invalid snowflake specified: {0}")]
     InvalidSnowflake(ParseIntError),
+    #[error("Invalid key for request type")]
+    InvalidKeyForRequestType,
 }

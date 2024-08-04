@@ -16,9 +16,8 @@
 //! ```
 //!
 
-extern crate proc_macro;
-
 pub(crate) mod _prelude {
+    pub(crate) use super::model;
     pub use crate::model::error::*;
     pub use serde::Deserialize;
     pub use strum::{self, EnumCount, EnumDiscriminants, EnumIs, EnumProperty, IntoStaticStr};

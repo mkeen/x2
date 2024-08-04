@@ -1,6 +1,6 @@
 use super::prelude::*;
 
-use crate::responses::users::muting::Response;
+use crate::{requests::ClientAgnosticBuilder, responses::users::muting::Response};
 
 type UserId<'a> = &'a str;
 type SourceUserId<'a> = UserId<'a>;
@@ -18,8 +18,8 @@ struct MutePostBody<'a> {
 }
 
 #[derive(Debug, Built, Authorized)]
-pub struct Request {
-    builder: Option<RequestBuilder>,
+pub struct Request<'a> {
+    builder: Option<RequestBuilder<'a>>,
 }
 
 pub enum Action<'a> {
@@ -28,8 +28,8 @@ pub enum Action<'a> {
 }
 
 impl<'a> Action<'_> {
-    pub fn effect(self, client: &'static reqwest::blocking::Client) -> RequestBuilder {
-        match self {
+    pub fn effect(self, client: reqwest_oauth1::Client<DefaultSigner>) -> RequestBuilder {
+        ClientAgnosticBuilder::Oauth1(match self {
             Action::Mute(source, target) => client
                 .post(super::Endpoint::Unmute.url(Some(&[source])))
                 .json(&MutePostBody {
@@ -38,50 +38,54 @@ impl<'a> Action<'_> {
             Action::Unmute(source, target) => {
                 client.delete(super::Endpoint::Unmute.url(Some(&[source, target])))
             }
-        }
+        })
     }
 }
 
-impl Request {
-    pub fn new(auth: &Context, action: Action) -> Self {
+impl<'a> Request<'a> {
+    pub fn new(auth: &'a Context, action: Action) -> Self {
         Self {
-            builder: Self::authorize(auth, action.effect(client())),
+            builder: Some(action.effect(Self::authorize_oauth1(auth))),
         }
     }
 
-    pub fn mute(auth: &Context, source_user_id: &str, target_user_id: &str) -> Self {
+    pub fn mute(auth: &'a Context, source_user_id: &str, target_user_id: &str) -> Self {
         Self::new(auth, Action::Mute(source_user_id, target_user_id))
     }
 
-    pub fn unmute(auth: &Context, source_user_id: &str, target_user_id: &str) -> Self {
+    pub fn unmute(auth: &'a Context, source_user_id: &str, target_user_id: &str) -> Self {
         Self::new(auth, Action::Unmute(source_user_id, target_user_id))
     }
 }
 
-// #[cfg(test)]
-// mod tests {
-//     use crate::{model::auth, requests::Request as RequestTrait};
+#[cfg(test)]
+mod tests {
+    use crate::model::auth::{Method, RequestCredential};
 
-//     use super::Request;
+    use super::*;
 
-//     #[test]
-//     fn integration_users_muting_manage_with_defaults() {
-//         let id = "c2HAMlWTX2m3cVgNgA0oqLRqH";
-//         let secret = "bwWKCB8KHHRnMDAKUa4cmZdp80FZxNsCLo2G1axDRHjb7nkOc2";
+    #[test]
+    fn muting_manage<'a>() {
+        let consumer_id = "c2HAMlWTX2m3cVgNgA0oqLRqH".to_string();
+        let consumer_secret = "bwWKCB8KHHRnMDAKUa4cmZdp80FZxNsCLo2G1axDRHjb7nkOc2".to_string();
 
-//         let context = auth::Context::Caller(auth::Method::AppOnly { id, secret });
+        let oauth2_client_id = "TV9xZXRVVVN0STIwSkcwck9WS2w6MTpjaQ".to_string();
+        let oauth2_client_secret = "gZHqK9YQZyrH7x7P9Yg5kxdE3j8_yDQopjBxXIptw-4b2TIM4_".to_string();
 
-//         // not testing authentication here, so will just unwrap and assume all is well
-//         let authorization = context.authorize().unwrap();
+        let user_id = "1444148135954108418-TSUe6cI1lpIddYScxSKIlmbfq71kyL".to_string();
+        let user_secret = "vupepUIBVJl08dhMdlHuNTyRWaWUVPenrPpSl1E4EqWb6".to_string();
 
-//         let response = Request::unmute(&authorization, "123", "123").request();
+        let context = Context::Request(RequestCredential::OAuth10AConsumer {
+            consumer_id,
+            consumer_secret,
+            user_id,
+            user_secret,
+        });
 
-//         println!("{:?}", response);
+        let response = Request::unmute(&context, "1444148135954108418", "13000192").request();
 
-//         assert!(response.is_ok());
+        println!("{:?}", response);
 
-//         let response = response.unwrap();
-
-//         assert!(!response.data.muting)
-//     }
-// }
+        assert!(response.is_ok());
+    }
+}

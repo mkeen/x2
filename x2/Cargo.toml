@@ -11,8 +11,9 @@ readme = "README"
 authors = ["Mike Keen <mwk@mikekeen.com>"]
 
 [dependencies]
-x2-derive = { path = "../x2-derive"}
+x2-derive = { path = "../x2-derive" }
 reqwest = { version = "0.11", features = ["gzip", "blocking", "json"] }
+reqwest-oauth1 = { path = "../../reqwest-oauth1", features = ["blocking", "multipart", "json"] }
 serde = { version = "1.0.204", features = ["derive"] }
 serde_json = "1.0.120"
 thiserror = "1.0.61"

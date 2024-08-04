@@ -56,23 +56,18 @@ impl Request {
         let fields = fields.unwrap_or_default();
         let expansions = expansions.unwrap_or_default();
 
-        let expansions = csv(expansions);
-        let fields_space = csv(fields.space);
-        let fields_user = csv(fields.user);
-        let fields_topic = csv(fields.topic);
-
         Self {
-            builder: Self::authorize(
+            builder: Self::authorize_simple(
                 auth,
                 super::super::client()
                     .get(super::Endpoint::Search.url(None))
                     .query(&[
                         ("query", query),
                         ("state", state.into()),
-                        ("expansions", &expansions),
-                        ("space.fields", &fields_space),
-                        ("user.fields", &fields_user),
-                        ("topic.fields", &fields_topic),
+                        ("expansions", csv(expansions).as_str()),
+                        ("space.fields", csv(fields.space).as_str()),
+                        ("user.fields", csv(fields.user).as_str()),
+                        ("topic.fields", csv(fields.topic).as_str()),
                     ]),
             ),
         }

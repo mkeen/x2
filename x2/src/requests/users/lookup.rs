@@ -26,11 +26,11 @@ impl<'a> Default for Fields<'a> {
 }
 
 #[derive(Debug, Built, Authorized)]
-pub struct Request {
-    builder: Option<RequestBuilder>,
+pub struct Request<'a> {
+    builder: Option<RequestBuilder<'a>>,
 }
 
-impl<'a> Request {
+impl<'a> Request<'a> {
     pub fn new(
         auth: &'a Context,
         usernames: &[&str],
@@ -40,7 +40,7 @@ impl<'a> Request {
         let fields = fields.unwrap_or_default();
 
         Self {
-            builder: Self::authorize(
+            builder: Self::authorize_simple(
                 auth,
                 client().get(super::Endpoint::Lookup.url(None)).query(&[
                     ("usernames", usernames.join(",")),
@@ -73,5 +73,7 @@ mod tests {
             Request::new(&authorization, &["divxspan", "wamalone"], None, None).request();
 
         assert!(response.is_ok());
+
+        println!("{:?}", response.unwrap().data);
     }
 }

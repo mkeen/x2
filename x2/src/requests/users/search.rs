@@ -48,14 +48,14 @@ impl Request {
         let max_results = format!("{}", max_results.unwrap_or(DEFAULT_RESULT_LIMIT));
 
         Self {
-            builder: Self::authorize(
+            builder: Self::authorize_simple(
                 auth,
                 client().get(super::Endpoint::Search.url(None)).query(&[
                     ("query", query),
                     ("expansions", expansions.as_str()),
                     ("max_results", max_results.as_str()),
                     ("user.fields", csv(fields.user).as_str()),
-                    ("tweet.fields", &csv(fields.tweets).as_str()),
+                    ("tweet.fields", csv(fields.tweets).as_str()),
                     ("pagination_token", pagination_token),
                 ]),
             ),
@@ -63,30 +63,30 @@ impl Request {
     }
 }
 
-// #[cfg(test)]
-// mod tests {
-//     use crate::{model::auth, requests::Request as RequestTrait};
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::model::auth::Method;
 
-//     use super::Request;
+    #[test]
+    fn integration_users_search_with_defaults() {
+        let id = "1444148135954108418-DIADOPhMshcWwtdYRi4X3elHubLr3z".into();
+        let secret = "yoBub8pCXyA8bwlGBFLUfrc2sittducbM0nkAwJbqeZkQ".into();
 
-//     #[test]
-//     fn integration_users_search_with_defaults() {
-//         let id = "c2HAMlWTX2m3cVgNgA0oqLRqH";
-//         let secret = "bwWKCB8KHHRnMDAKUa4cmZdp80FZxNsCLo2G1axDRHjb7nkOc2";
+        let context =
+            Context::Request(crate::model::auth::RequestCredential::OAuth10A { id, secret });
 
-//         let context = auth::Context::Caller(auth::Method::AppOnly { id, secret });
+        // not testing authentication here, so will just unwrap and assume all is well
+        let context = context.authenticate().unwrap();
 
-//         // not testing authentication here, so will just unwrap and assume all is well
-//         let authorization = context.authorize().unwrap();
+        let response = Request::new(&context, "123", None, None, None, None).request();
 
-//         let response = Request::new(&authorization, "123", None, None, None, None).request();
+        println!("{:?}", response);
 
-//         println!("{:?}", response);
+        assert!(response.is_ok());
 
-//         assert!(response.is_ok());
+        let response = response.unwrap();
 
-//         let response = response.unwrap();
-
-//         assert!(!response.data.is_empty())
-//     }
-// }
+        assert!(!response.data.is_empty());
+    }
+}

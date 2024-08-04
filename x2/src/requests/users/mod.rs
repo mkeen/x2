@@ -9,15 +9,15 @@ pub(crate) use super::Authorized;
 pub(crate) use super::Request;
 
 pub mod blocking;
-pub mod bookmarks;
-pub mod followers;
+//pub mod bookmarks;
+//pub mod followers;
 pub mod lookup;
 pub mod muting;
-pub mod search;
+//pub mod search;
 
 use prelude::*;
 
-#[derive(Debug, EnumProperty)]
+#[derive(Debug, EnumProperty, UrlEndpoint)]
 pub enum Endpoint {
     #[strum(props(
         Path = "2/users/{}/blocking",
@@ -39,9 +39,7 @@ pub enum Endpoint {
         RateUserMinute = "15",
     ))]
     Lookup,
-    Muting(muting::Endpoint),
+    //Muting(muting::Endpoint),
     #[strum(props(Path = "2/users/search", RateUserUnit = "15", RateUserMinute = "15"))]
     Search,
 }
-
-impl super::Endpoint for Endpoint {}
