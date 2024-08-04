@@ -81,7 +81,7 @@ mod tests {
 
         let response = Request::new(&context, "123", None, None, None, None).request();
 
-        println!("{:?}", response);
+        //println!("{:?}", response);
 
         assert!(response.is_ok());
 

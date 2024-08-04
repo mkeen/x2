@@ -1,5 +1,5 @@
 use super::prelude::*;
-use crate::{model::spaces::Field, responses::users::lookup::Response};
+use crate::{model::users::Field, responses::users::lookup::Response};
 
 #[derive(IntoStaticStr, Deserialize, EnumCount, Clone)]
 #[serde(rename_all = "snake_case")]
@@ -12,8 +12,8 @@ static DEFAULT_FIELDS_USER: [Field; 0] = [];
 static DEFAULT_FIELDS_TWEETS: [TweetField; 0] = [];
 
 pub struct Fields<'a> {
-    user: &'a [Field],
-    tweets: &'a [TweetField],
+    pub user: &'a [Field],
+    pub tweets: &'a [TweetField],
 }
 
 impl<'a> Default for Fields<'a> {
@@ -74,6 +74,6 @@ mod tests {
 
         assert!(response.is_ok());
 
-        println!("{:?}", response.unwrap().data);
+        //println!("{:?}", response.unwrap().data);
     }
 }

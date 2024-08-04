@@ -1,8 +1,10 @@
 pub(crate) mod prelude {
     pub(crate) use super::super::Endpoint as EndpointTrait;
     pub(crate) use super::super::{client, prelude::*};
-    pub(crate) use crate::model::tweets::Field as TweetField;
-    pub(crate) use crate::model::users::Field;
+    pub(crate) use crate::model::{
+        media::Field as MediaField, places::Field as PlaceField, polls::Field as PollField,
+        tweets::Field as TweetField, users::Field as UserField, users::Field,
+    };
 }
 
 pub(crate) use super::Authorized;

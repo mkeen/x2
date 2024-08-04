@@ -13,6 +13,7 @@ pub mod auth;
 //pub mod rate_limit;
 pub mod spaces;
 //pub mod usage_tweets;
+pub mod tweets;
 pub mod users;
 
 pub type Pattern<T> = T;

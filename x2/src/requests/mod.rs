@@ -11,7 +11,7 @@ pub(crate) mod prelude {
     pub(crate) use super::super::responses;
     pub use super::Authorized as AuthorizeTrait;
     pub use super::Request as RequestTrait;
-    pub(crate) use x2_derive::{Authorized, Built, UrlEndpoint};
+    pub(crate) use x2_derive::{Authorized, Built, UrlEndpoint, XData};
     pub(crate) type RequestBuilder = super::ClientAgnosticBuilder;
     pub(crate) type Oauth1RequestBuilder = reqwest_oauth1::RequestBuilder<DefaultSigner>;
 }
@@ -28,6 +28,7 @@ pub mod auth;
 //pub mod limits;
 pub mod spaces;
 //pub mod usage_tweets;
+pub mod tweets;
 pub mod users;
 pub mod util;
 

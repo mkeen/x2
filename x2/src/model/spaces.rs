@@ -1,6 +1,7 @@
-use super::prelude::{Deserialize, EnumCount, IntoStaticStr};
+use super::prelude::{Deserialize, EnumCount, IntoStaticStr, XData};
 
 use super::users::User;
+use super::EMPTY_STRING;
 use chrono::{self, DateTime, Utc};
 
 #[derive(Debug, Deserialize, IntoStaticStr, Default, Clone)]
@@ -80,7 +81,7 @@ pub enum Field {
     IsTicketed,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, XData)]
 pub struct Space {
     pub id: Option<String>,
     pub host_ids: Option<Vec<String>>,

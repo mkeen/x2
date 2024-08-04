@@ -1,4 +1,9 @@
-use super::prelude::Deserialize;
+use super::{
+    entities::Entities,
+    prelude::{Deserialize, EnumCount, IntoStaticStr},
+    tweets::Tweet,
+    withheld::Withheld,
+};
 
 #[derive(Debug, Deserialize)]
 pub struct Metrics {
@@ -8,6 +13,37 @@ pub struct Metrics {
     pub playback_50_count: Option<u64>,
     pub playback_75_count: Option<u64>,
     pub view_count: Option<u64>,
+}
+
+#[derive(Deserialize, IntoStaticStr, EnumCount, Clone)]
+#[serde(rename_all = "snake_case")]
+pub enum Field {
+    #[strum(serialize = "duration_ms")]
+    DurationMs,
+    #[strum(serialize = "height")]
+    Height,
+    #[strum(serialize = "media_key")]
+    MediaKey,
+    #[strum(serialize = "preview_image_url")]
+    PreviewImageUrl,
+    #[strum(serialize = "type")]
+    _Type,
+    #[strum(serialize = "url")]
+    Url,
+    #[strum(serialize = "width")]
+    Width,
+    #[strum(serialize = "public_metrics")]
+    PublicMetrics,
+    #[strum(serialize = "non_public_metrics")]
+    NonPublicMetrics,
+    #[strum(serialize = "organic_metrics")]
+    OrganicMetrics,
+    #[strum(serialize = "promoted_metrics")]
+    PromotedMetrics,
+    #[strum(serialize = "alt_text")]
+    AltText,
+    #[strum(serialize = "variants")]
+    Variants,
 }
 
 #[derive(Debug, Deserialize)]

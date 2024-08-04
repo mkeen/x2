@@ -2,10 +2,10 @@ use super::prelude::*;
 
 use crate::{
     model::{topics::Field as TopicField, users::Field as UserField},
-    responses::spaces::search::Response,
+    responses::spaces::lookup::Response,
 };
 
-const MAX_PARAM_MEMBERS: usize = 6;
+const MAX_PARAM_MEMBERS: usize = 5;
 
 #[derive(IntoStaticStr, Deserialize, EnumCount, Clone)]
 #[serde(rename_all = "snake_case")]
@@ -50,19 +50,15 @@ pub struct Request {
 impl Request {
     pub fn new(
         auth: &Context,
-        query: &str,
-        state: State,
+        ids: &[&str],
         expansions: Option<&[Expansion]>,
         fields: Option<Fields>,
     ) -> Self {
         let fields = fields.unwrap_or_default();
         let expansions = expansions.unwrap_or_default();
 
-        let state: &str = state.into();
-
         let fixed_query: [(String, String); MAX_PARAM_MEMBERS] = [
-            ("query".into(), query.into()),
-            ("state".into(), state.into()),
+            ("ids".into(), ids.join("")),
             ("expansions".into(), csv(expansions)),
             ("space.fields".into(), csv(fields.space)),
             ("user.fields".into(), csv(fields.user)),
@@ -73,13 +69,8 @@ impl Request {
             builder: Self::authorize_simple(
                 auth,
                 super::super::client()
-                    .get(super::Endpoint::Search.url(None))
-                    .query(
-                        &fixed_query
-                            .iter()
-                            .filter(|(_, param_entry)| !param_entry.is_empty())
-                            .collect::<Vec<&(String, String)>>(),
-                    ),
+                    .get(super::Endpoint::Lookup.url(None))
+                    .query(&fixed_query),
             ),
         }
     }
@@ -91,7 +82,7 @@ mod tests {
     use crate::model::auth::Method;
 
     #[test]
-    fn integration_spaces_search_with_defaults() {
+    fn integration_spaces_lookup_with_defaults() {
         let id = "c2HAMlWTX2m3cVgNgA0oqLRqH";
         let secret = "bwWKCB8KHHRnMDAKUa4cmZdp80FZxNsCLo2G1axDRHjb7nkOc2";
 
@@ -100,7 +91,23 @@ mod tests {
         // not testing authentication here, so will just unwrap and assume all is well
         let context = context.authenticate().unwrap();
 
-        let response = Request::new(&context, "crypto", State::All, None, None).request();
+        // Get a list of spaces so we can inquire about one of the returns for the real test
+
+        let search_response = crate::requests::spaces::search::Request::new(
+            &context,
+            "crypto",
+            State::All,
+            None,
+            None,
+        )
+        .request()
+        .unwrap();
+
+        let target_space_id = search_response.data.first().unwrap().id().unwrap();
+
+        //println!("targeting space {:?}", target_space_id);
+
+        let response = Request::new(&context, &[target_space_id], None, None).request();
 
         assert!(response.is_ok());
 
