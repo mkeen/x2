@@ -56,19 +56,13 @@ impl Request {
 #[cfg(test)]
 mod tests {
 
-    use crate::model::auth::Method;
+    use crate::{model::auth::Method, test_util::app_only_unauthed_credentials};
 
     use super::*;
 
     #[test]
-    fn integration_users_lookup_with_defaults() {
-        let id = "c2HAMlWTX2m3cVgNgA0oqLRqH";
-        let secret = "bwWKCB8KHHRnMDAKUa4cmZdp80FZxNsCLo2G1axDRHjb7nkOc2";
-
-        let context = Context::Caller(Method::AppOnly {
-            id: id.into(),
-            secret: secret.into(),
-        });
+    fn users_lookup_with_defaults() {
+        let context = app_only_unauthed_credentials();
 
         let authorization: Context = context.authenticate().unwrap();
 
@@ -77,6 +71,6 @@ mod tests {
 
         assert!(response.is_ok());
 
-        //println!("{:?}", response.unwrap().data);
+        println!("{:?}", response.unwrap().data);
     }
 }

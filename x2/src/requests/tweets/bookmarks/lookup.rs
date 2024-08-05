@@ -124,17 +124,23 @@ mod tests {
 
     use super::*;
 
+    #[test]
     fn get_bookmarks_lookup() {
         let context = oauth1_credentials();
 
-        let mut response = Request::new(&context, &"---", None, None, None, None);
+        let mut request = Request::new(&context, &"---", None, None, None, None);
 
         // request has been built and is able to be sent
-        match response.builder.take() {
+        match request.builder.take() {
             Some(builder) => match builder {
                 requests::ClientAgnosticBuilder::Native(_) => assert!(false),
-                requests::ClientAgnosticBuilder::Oauth1(builder) => {
-                    assert!(true)
+                requests::ClientAgnosticBuilder::Oauth1(_) => {
+                    request.builder.replace(builder);
+                    let response = request.request();
+                    assert!(response.is_ok());
+
+                    let response = response.unwrap();
+                    assert!(!response.data.is_empty())
                 }
             },
 

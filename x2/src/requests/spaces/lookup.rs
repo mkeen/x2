@@ -79,17 +79,11 @@ impl Request {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::model::auth::Method;
+    use crate::{model::auth::Method, test_util::app_only_unauthed_credentials};
 
     #[test]
     fn integration_spaces_lookup_with_defaults() {
-        let id = "c2HAMlWTX2m3cVgNgA0oqLRqH";
-        let secret = "bwWKCB8KHHRnMDAKUa4cmZdp80FZxNsCLo2G1axDRHjb7nkOc2";
-
-        let context = Context::Caller(Method::AppOnly {
-            id: id.into(),
-            secret: secret.into(),
-        });
+        let context = app_only_unauthed_credentials();
 
         // not testing authentication here, so will just unwrap and assume all is well
         let context = context.authenticate().unwrap();

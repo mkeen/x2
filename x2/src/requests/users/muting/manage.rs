@@ -54,34 +54,23 @@ impl Request {
 
 #[cfg(test)]
 mod tests {
-    use crate::model::auth::{Method, RequestCredential};
+    use crate::test_util::oauth1_credentials;
 
     use super::*;
 
     #[test]
     fn muting_manage<'a>() {
-        let consumer_id = "c2HAMlWTX2m3cVgNgA0oqLRqH".to_string();
-        let consumer_secret = "bwWKCB8KHHRnMDAKUa4cmZdp80FZxNsCLo2G1axDRHjb7nkOc2".to_string();
+        let context = oauth1_credentials();
 
-        let oauth2_client_id = "TV9xZXRVVVN0STIwSkcwck9WS2w6MTpjaQ".to_string();
-        let oauth2_client_secret = "gZHqK9YQZyrH7x7P9Yg5kxdE3j8_yDQopjBxXIptw-4b2TIM4_".to_string();
+        let response = Request::mute(&context, "1444148135954108418", "20786413").request();
 
-        let user_id = "1444148135954108418-TSUe6cI1lpIddYScxSKIlmbfq71kyL".to_string();
-        let user_secret = "vupepUIBVJl08dhMdlHuNTyRWaWUVPenrPpSl1E4EqWb6".to_string();
+        println!("MUTE WADE {:?}", response);
 
-        let context = Context::Request(RequestCredential::OAuth10AConsumer {
-            consumer_id,
-            consumer_secret,
-            user_id,
-            user_secret,
-        });
+        let response2 = Request::unmute(&context, "1444148135954108418", "13000192").request();
 
-        let response = Request::unmute(&context, "1444148135954108418", "13000192").request();
-
-        let response2 = Request::mute(&context, "1444148135954108418", "13000192").request();
-
-        println!("{:?} {:?}", response, response2);
+        println!("UNMUTE WADE {:?}", response2);
 
         assert!(response.is_ok());
+        assert!(response2.is_ok());
     }
 }
