@@ -65,7 +65,10 @@ mod tests {
         let id = "c2HAMlWTX2m3cVgNgA0oqLRqH";
         let secret = "bwWKCB8KHHRnMDAKUa4cmZdp80FZxNsCLo2G1axDRHjb7nkOc2";
 
-        let context = Context::Caller(Method::AppOnly { id, secret });
+        let context = Context::Caller(Method::AppOnly {
+            id: id.into(),
+            secret: secret.into(),
+        });
 
         let authorization: Context = context.authenticate().unwrap();
 

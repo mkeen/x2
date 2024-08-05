@@ -6,12 +6,6 @@ type UserId<'a> = &'a str;
 type SourceUserId<'a> = UserId<'a>;
 type TargetUserId<'a> = UserId<'a>;
 
-fn validate_id(id: UserId) -> Result<(), LibError> {
-    id.parse::<u64>()
-        .map_err(|e| LibError::InvalidSnowflake(e))
-        .map(|_| ())
-}
-
 #[derive(Serialize)]
 struct MutePostBody<'a> {
     target_user_id: TargetUserId<'a>,

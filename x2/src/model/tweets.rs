@@ -1,4 +1,4 @@
-use super::prelude::{Deserialize, EnumCount, IntoStaticStr};
+use super::prelude::{Deserialize, EnumCount, IntoStaticStr, XData};
 
 use chrono::{DateTime, Utc};
 
@@ -156,7 +156,7 @@ pub enum Field {
     Withheld,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, XData)]
 pub struct Tweet {
     pub id: Option<String>,
     pub text: Option<String>,

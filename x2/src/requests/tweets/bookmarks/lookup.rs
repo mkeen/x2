@@ -1,9 +1,8 @@
-use chrono::{DateTime, Utc};
 use model::EMPTY_STRING;
 
 use super::prelude::*;
 
-use crate::responses::tweets::lookup::Response;
+use crate::responses::tweets::bookmarks::lookup::Response;
 
 #[derive(IntoStaticStr, Deserialize, EnumCount, Clone)]
 #[serde(rename_all = "snake_case")]
@@ -50,7 +49,7 @@ static DEFAULT_FIELDS_PLACE: [PlaceField; 0] = [];
 static DEFAULT_FIELDS_POLL: [PollField; 0] = [];
 static DEFAULT_FIELDS_USER: [UserField; 0] = [];
 static DEFAULT_EXPANSIONS: [Expansion; 0] = [];
-const MAX_PARAM_MEMBERS: usize = 13;
+const MAX_PARAM_MEMBERS: usize = 8;
 
 pub struct Fields<'a> {
     tweets: &'a [Field],
@@ -80,14 +79,10 @@ pub struct Request {
 impl Request {
     pub fn new(
         auth: &Context,
-        id: &str,
+        user_id: &str,
         expansions: Option<&[Expansion]>,
         fields: Option<Fields>,
-        exclude: Option<&[Exclude]>,
         max_results: Option<usize>,
-        since_id: Option<&str>,
-        until_id: Option<&str>,
-        start_time: Option<DateTime<Utc>>,
         pagination_token: Option<&str>,
     ) -> Self {
         let fields = fields.unwrap_or_default();
@@ -96,21 +91,10 @@ impl Request {
 
         let max_results = format!("{}", max_results.unwrap_or(10));
         let pagination_token = pagination_token.unwrap_or(&EMPTY_STRING);
-        let exclude = exclude.unwrap_or(&DEFAULT_EXCLUDES);
-        let since_id = since_id.unwrap_or(&EMPTY_STRING);
-        let until_id = until_id.unwrap_or(&EMPTY_STRING);
-        let start_time = start_time
-            .map(|d| d.to_rfc3339())
-            .unwrap_or(EMPTY_STRING.clone());
 
         let fixed_query: [(String, String); MAX_PARAM_MEMBERS] = [
-            ("id".into(), id.into()),
             ("expansions".into(), csv(expansions)),
-            ("exclude".into(), csv(exclude)),
             ("pagination_token".into(), pagination_token.into()),
-            ("since_id".into(), since_id.into()),
-            ("until_id".into(), until_id.into()),
-            ("start_time".into(), start_time),
             ("max_results".into(), max_results),
             ("tweet.fields".into(), csv(fields.tweets)),
             ("user.fields".into(), csv(fields.user)),
@@ -122,7 +106,7 @@ impl Request {
         Self {
             builder: Some(RequestBuilder::Oauth1(
                 Self::authorize_oauth1(auth)
-                    .get(super::Endpoint::Lookup.url(None))
+                    .get(super::Endpoint::Lookup.url(Some(&[user_id])))
                     .query(
                         &fixed_query
                             .iter()
@@ -136,30 +120,14 @@ impl Request {
 
 #[cfg(test)]
 mod tests {
-    use model::auth::RequestCredential;
+    use crate::test_util::oauth1_credentials;
 
     use super::*;
 
-    fn get_tweet_timelines() {
-        // let consumer_id = "c2HAMlWTX2m3cVgNgA0oqLRqH".to_string();
-        // let consumer_secret = "bwWKCB8KHHRnMDAKUa4cmZdp80FZxNsCLo2G1axDRHjb7nkOc2".to_string();
+    fn get_bookmarks_lookup() {
+        let context = oauth1_credentials();
 
-        // let oauth2_client_id = "TV9xZXRVVVN0STIwSkcwck9WS2w6MTpjaQ".to_string();
-        // let oauth2_client_secret = "gZHqK9YQZyrH7x7P9Yg5kxdE3j8_yDQopjBxXIptw-4b2TIM4_".to_string();
-
-        // let user_id = "1444148135954108418-TSUe6cI1lpIddYScxSKIlmbfq71kyL".to_string();
-        // let user_secret = "vupepUIBVJl08dhMdlHuNTyRWaWUVPenrPpSl1E4EqWb6".to_string();
-
-        let context = Context::Request(RequestCredential::OAuth10AConsumer {
-            consumer_id: "".into(),
-            consumer_secret: "".into(),
-            user_id: "".into(),
-            user_secret: "".into(),
-        });
-
-        let mut response = Request::new(
-            &context, &"---", None, None, None, None, None, None, None, None,
-        );
+        let mut response = Request::new(&context, &"---", None, None, None, None);
 
         // request has been built and is able to be sent
         match response.builder.take() {

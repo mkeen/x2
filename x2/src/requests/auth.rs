@@ -17,17 +17,6 @@ impl Request {
     pub fn new(auth: &Context) -> Self {
         match auth {
             Context::Caller(caller) => match caller {
-                Method::OAuth10AUser {
-                    app_id,
-                    app_secret,
-                    user_id,
-                    user_secret,
-                } => Self {
-                    builder: Some(RequestBuilder::Oauth1(
-                        Self::authorize_oauth1(auth).get(Endpoint::Authentication10A.url(None)),
-                    )),
-                },
-
                 Method::AppOnly { id, secret } => {
                     // todo, not the cleanest that we have id and secret in scope here
                     Self {
@@ -64,7 +53,11 @@ mod tests {
         let id = "c2HAMlWTX2m3cVgNgA0oqLRqH";
         let secret = "bwWKCB8KHHRnMDAKUa4cmZdp80FZxNsCLo2G1axDRHjb7nkOc2";
 
-        let context = Context::Caller(Method::AppOnly { id, secret });
+        let context = Context::Caller(Method::AppOnly {
+            id: id.into(),
+            secret: secret.into(),
+        });
+
         let response = Request::new(&context).request();
 
         assert!(response.is_ok());

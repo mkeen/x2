@@ -7,12 +7,12 @@ use urlencoding::encode;
 use reqwest_oauth1::OAuthClientProvider;
 
 #[derive(EnumIs, Debug, Clone)]
-pub enum Context<'a> {
-    Caller(Method<'a>),
+pub enum Context {
+    Caller(Method),
     Request(RequestCredential),
 }
 
-impl<'a> Context<'a> {
+impl Context {
     pub fn authenticate(&self) -> Result<Self, XError> {
         match self {
             Context::Request(_) => Ok(self.clone()),
@@ -25,9 +25,9 @@ impl<'a> Context<'a> {
         builder: reqwest::blocking::RequestBuilder,
     ) -> reqwest::blocking::RequestBuilder {
         match self {
-            Context::Caller(unauthenticated) => match *unauthenticated {
+            Context::Caller(unauthenticated) => match unauthenticated {
                 Method::AppOnly { id, secret } => {
-                    builder.basic_auth(encode(id), Some(encode(secret)))
+                    builder.basic_auth(encode(&id), Some(encode(&secret)))
                 }
                 _ => builder,
             },
@@ -45,17 +45,7 @@ impl<'a> Context<'a> {
         reqwest_oauth1::Signer<reqwest_oauth1::Secrets, reqwest_oauth1::DefaultSM>,
     > {
         match self {
-            Context::Caller(unauthenticated) => match *unauthenticated {
-                Method::OAuth10AUser {
-                    app_id,
-                    app_secret,
-                    user_id,
-                    user_secret,
-                } => client.clone().oauth1(
-                    reqwest_oauth1::Secrets::new(app_id, app_secret).token(user_id, user_secret),
-                ),
-                _ => panic!("dah!"),
-            },
+            Context::Caller(unauthenticated) => panic!("dah!"),
             Context::Request(authenticated) => match authenticated {
                 RequestCredential::Bearer(bearer) => panic!("dah!"),
                 RequestCredential::OAuth10AConsumer {
@@ -72,18 +62,10 @@ impl<'a> Context<'a> {
     }
 }
 
-#[derive(Debug, Clone)]
-pub enum Method<'a> {
-    AppOnly {
-        id: &'a str,
-        secret: &'a str,
-    },
-    OAuth10AUser {
-        app_id: &'a str,
-        app_secret: &'a str,
-        user_id: &'a str,
-        user_secret: &'a str,
-    },
+#[derive(Debug, Clone, EnumDiscriminants)]
+#[strum_discriminants(name(MethodType))]
+pub enum Method {
+    AppOnly { id: String, secret: String },
 }
 
 #[derive(Debug, EnumIs, Clone)]

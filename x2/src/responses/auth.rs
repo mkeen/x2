@@ -12,8 +12,8 @@ pub enum Response {
     Bearer(String),
 }
 
-impl<'a> Into<Context<'a>> for Response {
-    fn into(self) -> Context<'a> {
+impl Into<Context> for Response {
+    fn into(self) -> Context {
         match self {
             Response::Bearer(bearer) => Context::Request(RequestCredential::Bearer(bearer)),
         }

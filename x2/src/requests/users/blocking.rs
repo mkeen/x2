@@ -73,31 +73,20 @@ impl Request {
 
 #[cfg(test)]
 mod tests {
-    use crate::model::auth::{Method, RequestCredential};
-
     use super::*;
+    use crate::test_util::oauth1_credentials;
 
     #[test]
-    fn auth_request_o1a_tokens_to_consumer<'a>() {
-        let consumer_id = "c2HAMlWTX2m3cVgNgA0oqLRqH".to_string();
-        let consumer_secret = "bwWKCB8KHHRnMDAKUa4cmZdp80FZxNsCLo2G1axDRHjb7nkOc2".to_string();
-
-        let oauth2_client_id = "TV9xZXRVVVN0STIwSkcwck9WS2w6MTpjaQ".to_string();
-        let oauth2_client_secret = "gZHqK9YQZyrH7x7P9Yg5kxdE3j8_yDQopjBxXIptw-4b2TIM4_".to_string();
-
-        let user_id = "1444148135954108418-TSUe6cI1lpIddYScxSKIlmbfq71kyL".to_string();
-        let user_secret = "vupepUIBVJl08dhMdlHuNTyRWaWUVPenrPpSl1E4EqWb6".to_string();
-
-        let context = Context::Request(RequestCredential::OAuth10AConsumer {
-            consumer_id,
-            consumer_secret,
-            user_id,
-            user_secret,
-        });
+    fn user_blocking_minimal() {
+        let context: Context = oauth1_credentials();
 
         let response =
             Request::new(&context, "1444148135954108418", None, None, None, None).request();
 
         assert!(response.is_ok());
+
+        let response = response.unwrap();
+
+        assert!(!response.data.is_empty());
     }
 }

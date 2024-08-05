@@ -7,5 +7,6 @@ mod prelude {
 
 pub(crate) use super::Response;
 
+pub mod bookmarks;
 pub mod lookup;
 pub mod search;

@@ -9,7 +9,6 @@ pub(crate) use super::Request;
 
 pub mod blocking;
 //pub mod bookmarks;
-//pub mod followers;
 pub mod lookup;
 pub mod muting;
 //pub mod search;
