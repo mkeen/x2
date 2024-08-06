@@ -1,5 +1,5 @@
 pub(crate) mod prelude {
-    pub type DefaultSigner = Signer<reqwest_oauth1::Secrets, reqwest_oauth1::DefaultSM>;
+    pub type DefaultSigner<'a> = Signer<'a, reqwest_oauth1::Secrets<'a>, reqwest_oauth1::DefaultSM>;
     pub use super::super::_prelude::*;
     pub use super::super::model::auth::Context;
     pub use super::super::responses::Response;
@@ -11,8 +11,8 @@ pub(crate) mod prelude {
     pub use super::Authorized as AuthorizeTrait;
     pub use super::Request as RequestTrait;
     pub(crate) use x2_derive::{Authorized, Built, UrlEndpoint};
-    pub(crate) type RequestBuilder = super::ClientAgnosticBuilder;
-    pub(crate) type Oauth1RequestBuilder = reqwest_oauth1::RequestBuilder<DefaultSigner>;
+    pub(crate) type RequestBuilder<'a> = super::ClientAgnosticBuilder<'a>;
+    pub(crate) type Oauth1RequestBuilder<'a> = reqwest_oauth1::RequestBuilder<DefaultSigner<'a>>;
 }
 
 use prelude::*;
@@ -31,9 +31,9 @@ pub mod tweets;
 pub mod users;
 mod util;
 
-pub trait Request<R: Response>: Sized {
-    fn builder(&mut self) -> Option<ClientAgnosticBuilder>;
-    fn update_builder(&mut self, builder: ClientAgnosticBuilder);
+pub trait Request<'a, R: Response<'a>> {
+    fn builder(&mut self) -> Option<ClientAgnosticBuilder<'a>>;
+    fn update_builder(&mut self, builder: ClientAgnosticBuilder<'a>);
 
     fn request(&mut self) -> Result<R, XError> {
         self.builder()
@@ -56,12 +56,12 @@ pub trait Request<R: Response>: Sized {
 }
 
 #[derive(Debug)]
-pub enum ClientAgnosticBuilder {
+pub enum ClientAgnosticBuilder<'a> {
     Native(reqwest::blocking::RequestBuilder),
-    Oauth1(Oauth1RequestBuilder), // todo: check upstream for why a lifetime is needed here
+    Oauth1(Oauth1RequestBuilder<'a>), // todo: check upstream for why a lifetime is needed here
 }
 
-impl ClientAgnosticBuilder {
+impl<'a> ClientAgnosticBuilder<'a> {
     fn send(self) -> Result<reqwest::blocking::Response, XError> {
         match self {
             ClientAgnosticBuilder::Native(native) => native.send().map_err(|e| XError::Reqwest(e)),
@@ -85,9 +85,9 @@ pub(crate) fn client() -> &'static ReqwestClient {
     })
 }
 
-pub trait Authorized<R>: Request<R>
+pub trait Authorized<'a, R>: Request<'a, R>
 where
-    R: Response,
+    R: Response<'a>,
 {
     fn authorize_simple(
         auth: &Context,

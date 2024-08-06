@@ -14,8 +14,8 @@ pub mod users;
 
 pub type Pattern<T> = T;
 
-pub trait Response: for<'de> Deserialize<'de> {
-    type Request: super::requests::Request<Self>;
+pub trait Response<'a>: for<'de> Deserialize<'de> {
+    type Request: super::requests::Request<'a, Self>;
 
     fn try_into_from_bytes<'de>(bytes: &'de [u8]) -> Result<Self, XError> {
         serde_json::from_slice::<Self>(bytes)

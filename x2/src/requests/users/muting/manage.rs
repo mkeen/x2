@@ -12,8 +12,8 @@ struct MutePostBody<'a> {
 }
 
 #[derive(Debug, Built, Authorized)]
-pub struct Request {
-    builder: Option<RequestBuilder>,
+pub struct Request<'a> {
+    builder: Option<RequestBuilder<'a>>,
 }
 
 pub enum Action<'a> {
@@ -25,7 +25,7 @@ impl<'a> Action<'_> {
     pub fn effect(self, client: reqwest_oauth1::Client<DefaultSigner>) -> RequestBuilder {
         ClientAgnosticBuilder::Oauth1(match self {
             Action::Mute(source, target) => client
-                .post(super::Endpoint::Unmute.url(Some(&[source])))
+                .post(super::Endpoint::Mute.url(Some(&[source])))
                 .json(&MutePostBody {
                     target_user_id: target,
                 }),
@@ -36,18 +36,18 @@ impl<'a> Action<'_> {
     }
 }
 
-impl Request {
-    pub fn new(auth: &Context, action: Action) -> Self {
+impl<'a> Request<'a> {
+    pub fn new(auth: &'a Context, action: Action) -> Self {
         Self {
             builder: Some(action.effect(Self::authorize_oauth1(auth))),
         }
     }
 
-    pub fn mute(auth: &Context, source_user_id: &str, target_user_id: &str) -> Self {
+    pub fn mute(auth: &'a Context, source_user_id: &str, target_user_id: &str) -> Self {
         Self::new(auth, Action::Mute(source_user_id, target_user_id))
     }
 
-    pub fn unmute(auth: &Context, source_user_id: &str, target_user_id: &str) -> Self {
+    pub fn unmute(auth: &'a Context, source_user_id: &str, target_user_id: &str) -> Self {
         Self::new(auth, Action::Unmute(source_user_id, target_user_id))
     }
 }
@@ -59,18 +59,12 @@ mod tests {
     use super::*;
 
     #[test]
-    fn muting_manage<'a>() {
+    fn muting_manage() {
         let context = oauth1_credentials();
 
-        let response = Request::mute(&context, "1444148135954108418", "20786413").request();
+        let mute = Request::mute(&context, "1444148135954108418", "20786413").request();
+        let unmute = Request::unmute(&context, "1444148135954108418", "20786413").request();
 
-        println!("MUTE WADE {:?}", response);
-
-        let response2 = Request::unmute(&context, "1444148135954108418", "13000192").request();
-
-        println!("UNMUTE WADE {:?}", response2);
-
-        assert!(response.is_ok());
-        assert!(response2.is_ok());
+        assert!(mute.is_ok() && unmute.is_ok());
     }
 }

@@ -73,8 +73,8 @@ impl<'a> Default for Fields<'a> {
 }
 
 #[derive(Debug, Built, Authorized)]
-pub struct Request {
-    builder: Option<RequestBuilder>,
+pub struct Request<'a> {
+    builder: Option<RequestBuilder<'a>>,
 }
 
 #[derive(IntoStaticStr, Deserialize, EnumCount, Clone)]
@@ -84,9 +84,9 @@ pub enum SortOrder {
     Relevancy,
 }
 
-impl Request {
+impl<'a> Request<'a> {
     pub fn new(
-        auth: &Context,
+        auth: &'a Context,
         query: &str,
         expansions: Option<&[Expansion]>,
         fields: Option<Fields>,

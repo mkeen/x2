@@ -11,8 +11,8 @@ struct BookmarkPostBody<'a> {
 }
 
 #[derive(Debug, Built, Authorized)]
-pub struct Request {
-    builder: Option<RequestBuilder>,
+pub struct Request<'a> {
+    builder: Option<RequestBuilder<'a>>,
 }
 
 pub enum Action<'a> {
@@ -33,18 +33,18 @@ impl<'a> Action<'_> {
     }
 }
 
-impl Request {
-    pub fn new(auth: &Context, action: Action) -> Self {
+impl<'a> Request<'a> {
+    pub fn new(auth: &'a Context, action: Action) -> Self {
         Self {
             builder: Some(action.effect(Self::authorize_oauth1(auth))),
         }
     }
 
-    pub fn bookmark(auth: &Context, user_id: &str, tweet_id: &str) -> Self {
+    pub fn bookmark(auth: &'a Context, user_id: &str, tweet_id: &str) -> Self {
         Self::new(auth, Action::Bookmark(user_id, tweet_id))
     }
 
-    pub fn unbookmark(auth: &Context, user_id: &str, tweet_id: &str) -> Self {
+    pub fn unbookmark(auth: &'a Context, user_id: &str, tweet_id: &str) -> Self {
         Self::new(auth, Action::Unbookmark(user_id, tweet_id))
     }
 }

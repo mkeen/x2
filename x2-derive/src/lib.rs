@@ -19,11 +19,11 @@ pub fn build_request(input: TokenStream) -> TokenStream {
 
     let expanded = quote! {
         impl #impl_generics #request_generics for #name #ty_generics #where_clause {
-            fn builder(&mut self) -> Option<RequestBuilder> {
+            fn builder(&mut self) -> Option<RequestBuilder<#lifetime>> {
                 self.builder.take()
             }
 
-            fn update_builder(&mut self, builder: RequestBuilder) {
+            fn update_builder(&mut self, builder: RequestBuilder<#lifetime>) {
                 self.builder.replace(builder);
             }
         }

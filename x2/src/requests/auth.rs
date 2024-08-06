@@ -9,12 +9,12 @@ use model::auth::Method;
 static PARAMS: [(&str, &str); 1] = [("grant_type", "client_credentials")];
 
 #[derive(Debug, Built, Authorized)]
-pub struct Request {
-    builder: Option<RequestBuilder>,
+pub struct Request<'a> {
+    builder: Option<RequestBuilder<'a>>,
 }
 
-impl Request {
-    pub fn new(auth: &Context) -> Self {
+impl<'a> Request<'a> {
+    pub fn new(auth: &'a Context) -> Self {
         match auth {
             Context::Caller(caller) => match caller {
                 Method::AppOnly { id, secret } => {
@@ -46,17 +46,11 @@ pub enum Endpoint {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::model::auth::Method;
+    use crate::{model::auth::Method, test_util::app_only_unauthed_credentials};
 
     #[test]
     fn auth_request_app_only_to_bearer<'a>() {
-        let id = "c2HAMlWTX2m3cVgNgA0oqLRqH";
-        let secret = "bwWKCB8KHHRnMDAKUa4cmZdp80FZxNsCLo2G1axDRHjb7nkOc2";
-
-        let context = Context::Caller(Method::AppOnly {
-            id: id.into(),
-            secret: secret.into(),
-        });
+        let context = app_only_unauthed_credentials();
 
         let response = Request::new(&context).request();
 

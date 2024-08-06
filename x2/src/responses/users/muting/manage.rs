@@ -9,6 +9,6 @@ pub type Response = Pattern<SimpleData<MutingStatus>>;
 
 impl MutingStatus {}
 
-impl super::super::Response for Response {
-    type Request = requests::users::muting::manage::Request;
+impl<'a> super::super::Response<'a> for Response {
+    type Request = requests::users::muting::manage::Request<'a>;
 }

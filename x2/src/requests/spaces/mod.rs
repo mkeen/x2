@@ -4,7 +4,7 @@ pub mod prelude {
     pub(crate) use crate::model::spaces::*;
 }
 
-use prelude::*;
+use prelude::EnumProperty;
 
 pub(crate) use super::Authorized;
 pub(crate) use super::Request;

@@ -43,13 +43,13 @@ impl<'a> Default for Fields<'a> {
 }
 
 #[derive(Debug, Built, Authorized)]
-pub struct Request {
-    builder: Option<super::RequestBuilder>,
+pub struct Request<'a> {
+    builder: Option<RequestBuilder<'a>>,
 }
 
-impl Request {
+impl<'a> Request<'a> {
     pub fn new(
-        auth: &Context,
+        auth: &'a Context,
         query: &str,
         state: State,
         expansions: Option<&[Expansion]>,

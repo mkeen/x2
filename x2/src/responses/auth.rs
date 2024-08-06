@@ -52,6 +52,6 @@ where
     deserializer.deserialize_map(StringVisitor)
 }
 
-impl super::Response for Response {
-    type Request = requests::auth::Request;
+impl<'a> super::Response<'a> for Response {
+    type Request = requests::auth::Request<'a>;
 }
