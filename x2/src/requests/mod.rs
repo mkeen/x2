@@ -10,13 +10,15 @@ pub(crate) mod prelude {
     pub static DEFAULT_RESULT_LIMIT: u16 = 25;
     pub use super::Authorized as AuthorizeTrait;
     pub use super::Request as RequestTrait;
-    pub(crate) use x2_derive::{Authorized, Built, UrlEndpoint};
+    pub(crate) use x2_derive::{Authorized, Built, Paginated, UrlEndpoint};
     pub(crate) type RequestBuilder<'a> = super::ClientAgnosticBuilder<'a>;
     pub(crate) type Oauth1RequestBuilder<'a> = reqwest_oauth1::RequestBuilder<DefaultSigner<'a>>;
 }
 
 use prelude::*;
 use reqwest::{blocking::Client as ReqwestClient, Url};
+
+use responses::Paginated as ResponsePaginated;
 
 use std::sync::OnceLock;
 
@@ -25,33 +27,48 @@ static BASE_CLIENT: OnceLock<reqwest::blocking::Client> = OnceLock::new();
 
 pub mod auth;
 //pub mod limits;
-pub mod spaces;
+//pub mod spaces;
 //pub mod usage_tweets;
 pub mod tweets;
-pub mod users;
+//pub mod users;
 mod util;
 
-pub trait Request<'a, R: Response<'a>> {
-    fn builder(&mut self) -> Option<ClientAgnosticBuilder<'a>>;
-    fn update_builder(&mut self, builder: ClientAgnosticBuilder<'a>);
+pub trait Request<'a, R: Response<'a>>: Sized {
+    fn builder(&self) -> Option<ClientAgnosticBuilder<'a>>;
+    fn query(&self) -> &[(String, String)];
 
-    fn request(&mut self) -> Result<R, XError> {
+    // fn prepare(&mut self) {
+    //     let query: Vec<(String, String)> = self
+    //         .query()
+    //         .iter()
+    //         .filter(|&(name, query)| !query.is_empty())
+    //         .map(|a| a.clone())
+    //         .collect::<Vec<(String, String)>>();
+
+    //     let builder = self.builder().unwrap(); // todo some unwrap / clone nonsense here in this function
+
+    //     if !query.is_empty() {
+    //         self.set_builder(builder.query(&query));
+    //     } else {
+    //         self.set_builder(builder);
+    //     }
+    // }
+
+    fn request(&mut self) -> Result<R, XError>
+    where
+        Self: Sized,
+    {
         self.builder()
-            .map(|builder| {
-                builder
-                    .send()
-                    .map_err(|e| XError::Socket(e.to_string()))
-                    .map(|response| match response.status().is_success() {
-                        true => R::try_into_from_bytes(
-                            &response.bytes().map_err(|e| XError::Reqwest(e))?,
-                        ),
-                        false => Err(XError::HttpGeneric(
-                            response.status(),
-                            response.text().unwrap_or("Unknown".into()),
-                        )),
-                    })?
-            })
-            .ok_or(XError::AlreadyConsumed)?
+            .unwrap()
+            .send()
+            .map_err(|e| XError::Socket(e.to_string()))
+            .map(|response| match response.status().is_success() {
+                true => R::try_into_from_bytes(&response.bytes().map_err(|e| XError::Reqwest(e))?),
+                false => Err(XError::HttpGeneric(
+                    response.status(),
+                    response.text().unwrap_or("Unknown".into()),
+                )),
+            })?
     }
 }
 
@@ -62,6 +79,18 @@ pub enum ClientAgnosticBuilder<'a> {
 }
 
 impl<'a> ClientAgnosticBuilder<'a> {
+    fn query(self, query: &[(String, String)]) -> ClientAgnosticBuilder<'a> {
+        match self {
+            ClientAgnosticBuilder::Native(builder) => {
+                ClientAgnosticBuilder::Native(builder.query(query))
+            }
+
+            ClientAgnosticBuilder::Oauth1(builder) => {
+                ClientAgnosticBuilder::Oauth1(builder.query(query))
+            }
+        }
+    }
+
     fn send(self) -> Result<reqwest::blocking::Response, XError> {
         match self {
             ClientAgnosticBuilder::Native(native) => native.send().map_err(|e| XError::Reqwest(e)),
@@ -121,7 +150,7 @@ pub(crate) trait Endpoint: EnumProperty {
     fn url(&self, params: Option<&[&str]>) -> Url {
         let params = params.unwrap_or(&super::DEFAULT_URL_PARAMS);
         Url::parse(&format!(
-            "https://api.twitter.com/{}",
+            "https://api.x.com/{}",
             self.replace_url_params(params)
         ))
         .expect("bad static url definition or params implementation")

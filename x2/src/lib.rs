@@ -19,6 +19,7 @@
 pub(crate) mod _prelude {
     pub use super::{model, requests, responses};
     pub use crate::model::error::*;
+    pub use array_concat::*;
     pub use serde::Deserialize;
     pub use strum::{self, EnumCount, EnumDiscriminants, EnumIs, EnumProperty, IntoStaticStr};
 }

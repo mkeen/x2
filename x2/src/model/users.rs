@@ -20,12 +20,12 @@ pub enum VerifiedType {
     None,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, XData)]
 pub struct PublicMetrics {
-    pub followers_count: Option<String>,
-    pub following_count: Option<String>,
-    pub tweet_count: Option<String>,
-    pub listed_count: Option<String>,
+    followers_count: Option<String>,
+    following_count: Option<String>,
+    tweet_count: Option<String>,
+    listed_count: Option<String>,
 }
 
 #[derive(Debug, Deserialize, IntoStaticStr)]
@@ -35,7 +35,7 @@ pub enum Includes {
     Tweets(Vec<Tweet>),
 }
 
-#[derive(Deserialize, IntoStaticStr, EnumCount, Clone)]
+#[derive(Deserialize, IntoStaticStr, EnumCount, Clone, Debug)]
 #[serde(rename_all = "snake_case")]
 pub enum Field {
     #[strum(serialize = "created_at")]

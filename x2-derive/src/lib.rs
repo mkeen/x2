@@ -17,19 +17,28 @@ pub fn build_request(input: TokenStream) -> TokenStream {
         None => quote! { super::Request<Response> },
     };
 
+    let builder_sig = match lifetime {
+        Some(lifetime) => quote! { RequestBuilder<#lifetime> },
+        None => quote! { RequestBuilder },
+    };
+
     let expanded = quote! {
         impl #impl_generics #request_generics for #name #ty_generics #where_clause {
-            fn builder(&mut self) -> Option<RequestBuilder<#lifetime>> {
+            fn builder(&mut self) -> Option<#builder_sig> { 
                 self.builder.take()
             }
 
-            fn update_builder(&mut self, builder: RequestBuilder<#lifetime>) {
+            fn query(&mut self) -> &mut [(String, String)] {
+                &mut self.query
+            }
+
+            fn set_builder(&mut self, builder: #builder_sig) {
                 self.builder.replace(builder);
             }
         }
     };
 
-    TokenStream::from(expanded)
+    TokenStream::from(expanded) 
 }
 
 #[proc_macro_derive(Authorized)]
@@ -47,6 +56,28 @@ pub fn authorized_request(input: TokenStream) -> TokenStream {
 
     let expanded = quote! {
         impl #impl_generics #authorized_generics for #name #ty_generics #where_clause {}
+    };
+
+    TokenStream::from(expanded)
+}
+
+#[proc_macro_derive(Paginated)]
+pub fn paginated_request(input: TokenStream) -> TokenStream {
+    let input = parse_macro_input!(input as DeriveInput);
+    let name = input.ident;
+    let (impl_generics, ty_generics, where_clause) = input.generics.split_for_impl();
+
+    let lifetime = input.generics.lifetimes().next();
+
+    let paginated_generics = match lifetime {
+        Some(lifetime) => quote! { super::Paginated<#lifetime, Response> },
+        None => quote! { super::Authorized<Response> },
+    };
+
+    let expanded = quote! {
+        impl #impl_generics #paginated_generics for #name #ty_generics #where_clause {
+            type Item = Response;
+        }
     };
 
     TokenStream::from(expanded)
@@ -97,9 +128,15 @@ pub fn derive_xdata(input: TokenStream) -> TokenStream {
 
                         // Fallback to the original type if it's not Option<T>
                         let getter_name = quote::format_ident!("{}", field_name.as_ref().unwrap());
+                        let getter_name_mut = quote::format_ident!("{}_mut", field_name.as_ref().unwrap());
+                        
                         quote! {
                             pub fn #getter_name(&self) -> Option<&#field_type> {
                                 self.#field_name.as_ref()
+                            }
+
+                            pub fn #getter_name_mut(&mut self) -> Option<&mut #field_type> {
+                                self.#field_name.as_mut()
                             }
                         }
                     }).collect::<Vec<_>>()

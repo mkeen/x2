@@ -11,10 +11,11 @@ readme = "README"
 authors = ["Mike Keen <mwk@mikekeen.com>"]
 
 [dependencies]
+array-concat = "0.5.3"
 chrono = { version = "0.4.38", features = ["serde"] }
 geojson = "0.24.1"
-reqwest = { version = "0.11", features = ["gzip", "blocking", "json"] }
-reqwest-oauth1 = { path = "../../reqwest-oauth1", features = ["blocking", "json"] }
+reqwest = { version = "0.12.7", features = ["gzip", "blocking", "json"] }
+reqwest-oauth1 = { version = "0.3.0", features = ["blocking", "json"] }
 serde = { version = "1.0.204", features = ["derive"] }
 serde_json = "1.0.120"
 strum = { version = "0.26.3", features = ["derive"] }

@@ -1,5 +1,7 @@
 use super::prelude::*;
 
+#![feature(generators, generator_trait)]
+
 use crate::{
     model::{topics::Field as TopicField, users::Field as UserField},
     responses::spaces::search::Response,
@@ -60,25 +62,21 @@ impl<'a> Request<'a> {
 
         let state: &str = state.into();
 
-        let fixed_query: [(String, String); MAX_PARAM_MEMBERS] = [
-            ("query".into(), query.into()),
-            ("state".into(), state.into()),
-            ("expansions".into(), csv(expansions)),
-            ("space.fields".into(), csv(fields.space)),
-            ("user.fields".into(), csv(fields.user)),
-            ("topic.fields".into(), csv(fields.topic)),
-        ];
-
         Self {
             builder: Self::authorize_simple(
                 auth,
                 super::super::client()
                     .get(super::Endpoint::Search.url(None))
-                    .query(
-                        &fixed_query
-                            .iter()
-                            .filter(|(_, param_entry)| !param_entry.is_empty())
-                            .collect::<Vec<&(String, String)>>(),
+                    .query([
+                        ("query".into(), query.into()),
+                        ("state".into(), state.into()),
+                        ("expansions".into(), csv(expansions)),
+                        ("space.fields".into(), csv(fields.space)),
+                        ("user.fields".into(), csv(fields.user)),
+                        ("topic.fields".into(), csv(fields.topic)),
+                    ].iter()
+                        .filter(|(_, param_entry)| !param_entry.is_empty())
+                        .collect::<Vec<&(String, String)>>(),
                     ),
             ),
         }

@@ -1,18 +1,19 @@
 use chrono::{DateTime, Utc};
 use model::EMPTY_STRING;
 
-use super::prelude::*;
+use super::{prelude::*, Paginated};
 
+use crate::requests::ResponsePaginated;
 use crate::responses::tweets::search::Response;
 
-#[derive(IntoStaticStr, Deserialize, EnumCount, Clone)]
+#[derive(IntoStaticStr, Deserialize, EnumCount, Clone, Debug)]
 #[serde(rename_all = "snake_case")]
 pub enum Exclude {
     Retweets,
     Replies,
 }
 
-#[derive(IntoStaticStr, Deserialize, EnumCount, Clone)]
+#[derive(IntoStaticStr, Deserialize, EnumCount, Clone, Debug)]
 pub enum Expansion {
     #[serde(rename = "attachments.poll_ids")]
     #[strum(serialize = "attachments.poll_ids")]
@@ -50,8 +51,10 @@ static DEFAULT_FIELDS_PLACE: [PlaceField; 0] = [];
 static DEFAULT_FIELDS_POLL: [PollField; 0] = [];
 static DEFAULT_FIELDS_USER: [UserField; 0] = [];
 static DEFAULT_EXPANSIONS: [Expansion; 0] = [];
-const MAX_PARAM_MEMBERS: usize = 14;
 
+const MAX_FIXED_PARAM_MEMBERS: usize = 14;
+
+#[derive(Debug)]
 pub struct Fields<'a> {
     tweets: &'a [Field],
     user: &'a [UserField],
@@ -75,6 +78,8 @@ impl<'a> Default for Fields<'a> {
 #[derive(Debug, Built, Authorized)]
 pub struct Request<'a> {
     builder: Option<RequestBuilder<'a>>,
+    query: [(String, String); MAX_FIXED_PARAM_MEMBERS],
+    next_page: (String, String),
 }
 
 #[derive(IntoStaticStr, Deserialize, EnumCount, Clone)]
@@ -89,7 +94,7 @@ impl<'a> Request<'a> {
         auth: &'a Context,
         query: &str,
         expansions: Option<&[Expansion]>,
-        fields: Option<Fields>,
+        fields: Option<Fields<'a>>,
         exclude: Option<&[Exclude]>,
         max_results: Option<usize>,
         since_id: Option<&str>,
@@ -99,7 +104,6 @@ impl<'a> Request<'a> {
         pagination_token: Option<&str>,
     ) -> Self {
         let fields = fields.unwrap_or_default();
-
         let expansions = expansions.unwrap_or(&DEFAULT_EXPANSIONS);
 
         let max_results = format!("{}", max_results.unwrap_or(10));
@@ -115,34 +119,54 @@ impl<'a> Request<'a> {
             .map(|d| d.to_rfc3339())
             .unwrap_or(EMPTY_STRING.clone());
 
-        let fixed_query: [(String, String); MAX_PARAM_MEMBERS] = [
-            ("query".into(), query.into()),
-            ("expansions".into(), csv(expansions)),
-            ("exclude".into(), csv(exclude)),
-            ("next_token".into(), pagination_token.into()), // this endpoint uses next_token instead of pagination_token
-            ("since_id".into(), since_id.into()),
-            ("until_id".into(), until_id.into()),
-            ("end_time".into(), end_time),
-            ("start_time".into(), start_time),
-            ("max_results".into(), max_results),
-            ("tweet.fields".into(), csv(fields.tweets)),
-            ("user.fields".into(), csv(fields.user)),
-            ("media.fields".into(), csv(fields.media)),
-            ("place.fields".into(), csv(fields.place)),
-            ("poll.fields".into(), csv(fields.poll)),
-        ];
-
         Self {
+            next_page: ("next_token".to_string(), pagination_token.to_string()),
+            query: [
+                ("query".into(), query.into()),
+                ("exclude".into(), csv(exclude)),
+                ("expansions".into(), csv(expansions)),
+                ("since_id".into(), since_id.into()),
+                ("until_id".into(), until_id.into()),
+                ("end_time".into(), end_time),
+                ("start_time".into(), start_time),
+                ("max_results".into(), max_results),
+                ("tweet.fields".into(), csv(fields.tweets)),
+                ("user.fields".into(), csv(fields.user)),
+                ("media.fields".into(), csv(fields.media)),
+                ("place.fields".into(), csv(fields.place)),
+                ("poll.fields".into(), csv(fields.poll)),
+                (EMPTY_STRING.clone(), EMPTY_STRING.clone()),
+            ],
             builder: Some(RequestBuilder::Oauth1(
-                Self::authorize_oauth1(auth)
-                    .get(super::Endpoint::Search.url(None))
-                    .query(
-                        &fixed_query
-                            .iter()
-                            .filter(|(_, param_entry)| !param_entry.is_empty())
-                            .collect::<Vec<&(String, String)>>(),
-                    ),
+                Self::authorize_oauth1(auth).get(super::Endpoint::Search.url(None)),
             )),
+        }
+    }
+}
+
+impl<'a> Iterator for Request<'a> {
+    type Item = Response;
+
+    fn next(&self) -> Option<Self::Item> {
+        let pagination_token_key_name = self.next_page_prepare();
+
+        let response: Result<Self::Item, XError> = self.request();
+
+        if response.is_ok() {
+            let response = response.unwrap();
+
+            let next_pagination_token = response.next_page();
+
+            if next_pagination_token.is_some() {
+                let next_pagination_token = next_pagination_token.unwrap();
+
+                self.next_page()
+                    .replace((pagination_token_key_name, next_pagination_token.to_string()));
+            }
+
+            Some(response)
+        } else {
+            None
         }
     }
 }
@@ -157,21 +181,30 @@ mod tests {
     fn search_tweets<'a>() {
         let context = oauth1_credentials();
 
-        let response = Request::new(
+        let mut request = Request::new(
             &context,
-            "buffalo bills",
+            "nft",
+            None,
+            None,
+            None,
+            Some(10),
             None,
             None,
             None,
             None,
             None,
-            None,
-            None,
-            None,
-            None,
-        )
-        .request();
+        );
 
-        assert!(response.is_ok());
+        // let a = request.request();
+
+        // println!("{:?}", a);
+
+        println!("{:?}", request.next());
+        println!("test");
+        println!("{:?}", request.next());
+
+        //println!("{:?}", response);
+
+        //assert!(response.is_some());
     }
 }

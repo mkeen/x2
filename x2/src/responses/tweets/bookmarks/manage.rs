@@ -5,7 +5,7 @@ pub struct BookmarkedStatus {
     pub bookmarked: bool,
 }
 
-pub type Response = Pattern<SimpleData<BookmarkedStatus>>;
+pub type Response = SimpleData<BookmarkedStatus>;
 
 impl BookmarkedStatus {}
 

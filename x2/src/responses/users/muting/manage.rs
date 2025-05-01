@@ -5,7 +5,7 @@ pub struct MutingStatus {
     pub muting: bool,
 }
 
-pub type Response = Pattern<SimpleData<MutingStatus>>;
+pub type Response = SimpleData<MutingStatus>;
 
 impl MutingStatus {}
 

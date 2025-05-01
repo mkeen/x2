@@ -11,36 +11,36 @@ use super::{
     withheld::Withheld,
 };
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, XData)]
 pub struct EditControls {
-    pub is_edit_eligible: Option<bool>,
-    pub editable_until: Option<DateTime<Utc>>,
-    pub edits_remaining: Option<u8>,
+    is_edit_eligible: Option<bool>,
+    editable_until: Option<DateTime<Utc>>,
+    edits_remaining: Option<u8>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, XData)]
 pub struct NoteTweet {
-    pub text: Option<String>,
-    pub entities: Option<Vec<Entities>>,
+    text: Option<String>,
+    entities: Option<Vec<Entities>>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, XData)]
 pub struct Attachment {
-    pub media_keys: Option<Vec<String>>,
-    pub poll_ids: Option<Vec<String>>,
+    media_keys: Option<Vec<String>>,
+    poll_ids: Option<Vec<String>>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, XData)]
 pub struct Coordinates {
     #[serde(rename = "type")]
-    pub _type: Option<String>,
-    pub coordinates: Option<(f32, f32)>,
-    pub place_id: Option<String>,
+    _type: Option<String>,
+    coordinates: Option<(f32, f32)>,
+    place_id: Option<String>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, XData)]
 pub struct Geo {
-    pub coordinates: Option<Coordinates>,
+    coordinates: Option<Coordinates>,
 }
 
 #[derive(Debug, Deserialize, IntoStaticStr)]
@@ -52,41 +52,41 @@ pub enum ContextAnnotations {
     Entity(Option<Vec<Entity>>),
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, XData)]
 pub struct PublicMetrics {
-    pub retweet_count: Option<u64>,
-    pub reply_count: Option<u64>,
-    pub like_count: Option<u64>,
-    pub quote_count: Option<u64>,
-    pub impression_count: Option<u64>,
-    pub bookmark_count: Option<u64>,
+    retweet_count: Option<u64>,
+    reply_count: Option<u64>,
+    like_count: Option<u64>,
+    quote_count: Option<u64>,
+    impression_count: Option<u64>,
+    bookmark_count: Option<u64>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, XData)]
 pub struct NonpublicMetrics {
-    pub impression_count: Option<u64>,
-    pub url_link_clicks: Option<u64>,
-    pub user_profile_clicks: Option<u64>,
+    impression_count: Option<u64>,
+    url_link_clicks: Option<u64>,
+    user_profile_clicks: Option<u64>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, XData)]
 pub struct OrganicMetrics {
-    pub impression_count: Option<u64>,
-    pub url_link_clicks: Option<u64>,
-    pub user_profile_clicks: Option<u64>,
-    pub retweet_count: Option<u64>,
-    pub reply_count: Option<u64>,
-    pub like_count: Option<u64>,
+    impression_count: Option<u64>,
+    url_link_clicks: Option<u64>,
+    user_profile_clicks: Option<u64>,
+    retweet_count: Option<u64>,
+    reply_count: Option<u64>,
+    like_count: Option<u64>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, XData)]
 pub struct PromotedMetrics {
-    pub impression_count: Option<u64>,
-    pub url_link_clicks: Option<u64>,
-    pub user_profile_clicks: Option<u64>,
-    pub retweet_count: Option<u64>,
-    pub reply_count: Option<u64>,
-    pub like_count: Option<u64>,
+    impression_count: Option<u64>,
+    url_link_clicks: Option<u64>,
+    user_profile_clicks: Option<u64>,
+    retweet_count: Option<u64>,
+    reply_count: Option<u64>,
+    like_count: Option<u64>,
 }
 
 #[derive(Debug, Deserialize, IntoStaticStr)]
@@ -158,28 +158,28 @@ pub enum Field {
 
 #[derive(Debug, Deserialize, XData)]
 pub struct Tweet {
-    pub id: Option<String>,
-    pub text: Option<String>,
-    pub created_at: Option<DateTime<Utc>>,
-    pub author_id: Option<String>,
-    pub edit_history_tweet_ids: Option<Vec<String>>,
-    pub edit_controls: Option<EditControls>,
-    pub conversation_id: Option<String>,
-    pub note_tweet: Option<NoteTweet>,
-    pub in_reply_to_user_id: Option<String>,
-    pub referenced_tweets: Option<Vec<Tweet>>,
-    pub attachments: Option<Vec<Attachment>>,
-    pub geo: Option<Geo>,
-    pub context_annotations: Option<Vec<ContextAnnotations>>,
-    pub entities: Option<Entities>,
-    pub withheld: Option<Withheld>,
-    pub public_metrics: Option<PublicMetrics>,
-    pub nonpublic_metrics: Option<NonpublicMetrics>,
-    pub organic_metrics: Option<OrganicMetrics>,
-    pub promoted_metrics: Option<PromotedMetrics>,
-    pub possibly_sensitive: Option<bool>,
-    pub lang: Option<String>,
-    pub reply_settings: Option<ReplySettings>,
-    pub source: Option<String>,
-    pub includes: Option<Includes>,
+    id: Option<String>,
+    text: Option<String>,
+    created_at: Option<DateTime<Utc>>,
+    author_id: Option<String>,
+    edit_history_tweet_ids: Option<Vec<String>>,
+    edit_controls: Option<EditControls>,
+    conversation_id: Option<String>,
+    note_tweet: Option<NoteTweet>,
+    in_reply_to_user_id: Option<String>,
+    referenced_tweets: Option<Vec<Tweet>>,
+    attachments: Option<Vec<Attachment>>,
+    geo: Option<Geo>,
+    context_annotations: Option<Vec<ContextAnnotations>>,
+    entities: Option<Entities>,
+    withheld: Option<Withheld>,
+    public_metrics: Option<PublicMetrics>,
+    nonpublic_metrics: Option<NonpublicMetrics>,
+    organic_metrics: Option<OrganicMetrics>,
+    promoted_metrics: Option<PromotedMetrics>,
+    possibly_sensitive: Option<bool>,
+    lang: Option<String>,
+    reply_settings: Option<ReplySettings>,
+    source: Option<String>,
+    includes: Option<Includes>,
 }

@@ -2,7 +2,7 @@ use super::prelude::{Deserialize, EnumCount, IntoStaticStr};
 
 use geojson::GeoJson;
 
-#[derive(Deserialize, IntoStaticStr, EnumCount, Clone)]
+#[derive(Deserialize, IntoStaticStr, EnumCount, Clone, Debug)]
 #[serde(rename_all = "snake_case")]
 pub enum Field {
     #[strum(serialize = "contained_within")]

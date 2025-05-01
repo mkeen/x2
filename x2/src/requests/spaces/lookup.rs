@@ -85,11 +85,9 @@ mod tests {
     fn integration_spaces_lookup_with_defaults() {
         let context = app_only_unauthed_credentials();
 
-        // not testing authentication here, so will just unwrap and assume all is well
         let context = context.authenticate().unwrap();
 
         // Get a list of spaces so we can inquire about one of the returns for the real test
-
         let search_response = crate::requests::spaces::search::Request::new(
             &context,
             "crypto",

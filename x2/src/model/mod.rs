@@ -10,6 +10,7 @@ pub mod media;
 pub mod places;
 pub mod polls;
 pub mod rate_limit;
+pub mod responses;
 pub mod spaces;
 pub mod topics;
 pub mod tweets;

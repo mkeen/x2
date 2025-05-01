@@ -122,7 +122,7 @@ impl<'a> Request<'a> {
         Self {
             builder: Some(RequestBuilder::Oauth1(
                 Self::authorize_oauth1(auth)
-                    .get(super::Endpoint::Lookup.url(None))
+                    .get(super::Endpoint::Timelines.url(None))
                     .query(
                         &fixed_query
                             .iter()
@@ -136,8 +136,6 @@ impl<'a> Request<'a> {
 
 #[cfg(test)]
 mod tests {
-    use model::auth::RequestCredential;
-
     use crate::test_util::oauth1_credentials;
 
     use super::*;

@@ -11,23 +11,22 @@ static PARAMS: [(&str, &str); 1] = [("grant_type", "client_credentials")];
 #[derive(Debug, Built, Authorized)]
 pub struct Request<'a> {
     builder: Option<RequestBuilder<'a>>,
+    query: [(String, String); 0],
 }
 
 impl<'a> Request<'a> {
     pub fn new(auth: &'a Context) -> Self {
         match auth {
             Context::Caller(caller) => match caller {
-                Method::AppOnly { id, secret } => {
-                    // todo, not the cleanest that we have id and secret in scope here
-                    Self {
-                        builder: Self::authorize_simple(
-                            auth,
-                            super::client()
-                                .post(Endpoint::Authentication.url(None))
-                                .form(&HashMap::from(PARAMS)),
-                        ),
-                    }
-                }
+                Method::AppOnly { id: _, secret: _ } => Self {
+                    query: [],
+                    builder: Self::authorize_simple(
+                        auth,
+                        super::client()
+                            .post(Endpoint::Authentication.url(None))
+                            .form(&HashMap::from(PARAMS)),
+                    ),
+                },
             },
 
             _ => panic!("wrong auth creds"),

@@ -9,7 +9,7 @@ pub struct PollOption {
     pub votes: Option<u64>,
 }
 
-#[derive(Deserialize, IntoStaticStr, EnumCount, Clone)]
+#[derive(Deserialize, IntoStaticStr, EnumCount, Clone, Debug)]
 #[serde(rename_all = "snake_case")]
 pub enum Field {
     #[strum(serialize = "duration_minutes")]
